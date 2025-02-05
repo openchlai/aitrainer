@@ -2,7 +2,6 @@
 import { ref, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 
-// Reactive state variables
 const transcriptionRequests = ref([]);
 const selectedAudio = ref(null);
 const transcriptionText = ref("");
@@ -12,126 +11,146 @@ const currentTime = ref(0);
 
 // Fetch transcription requests from API
 const fetchRequests = async () => {
-    try {
-        const response = await axios.get('http://127.0.0.1:8000/api/transcription/case-records');
-        transcriptionRequests.value = response.data;
-    } catch (error) {
-        console.error("Error fetching transcription requests:", error);
-    }
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/transcription/case-records');
+    transcriptionRequests.value = response.data;
+  } catch (error) {
+    console.error("Error fetching transcription requests:", error);
+  }
 };
 
 // Load transcription and reset audio state
 const loadTranscription = (request) => {
-    selectedAudio.value = request;
-    transcriptionText.value = "";
-    currentTime.value = 0;
-    isPlaying.value = false;
+  selectedAudio.value = request;
+  transcriptionText.value = "";
+  currentTime.value = 0;
+  isPlaying.value = false;
 };
 
 // Play audio function
 const playAudio = () => {
-    if (audioPlayer.value) {
-        audioPlayer.value.play();
-        isPlaying.value = true;
-    }
+  if (audioPlayer.value) {
+    audioPlayer.value.play();
+    isPlaying.value = true;
+  }
 };
 
-// Pause audio function
 const pauseAudio = () => {
-    if (audioPlayer.value) {
-        audioPlayer.value.pause();
-        isPlaying.value = false;
-    }
+  if (audioPlayer.value) {
+    audioPlayer.value.pause();
+    isPlaying.value = false;
+  }
 };
 
-// Reset audio function
 const resetAudio = () => {
-    if (audioPlayer.value) {
-        audioPlayer.value.currentTime = 0;
-        isPlaying.value = false;
-        transcriptionText.value = "";
-    }
+  if (audioPlayer.value) {
+    audioPlayer.value.currentTime = 0;
+    isPlaying.value = false;
+    transcriptionText.value = "";
+  }
 };
 
-// Skip forward/backward function
+// Skip forward/backward (clamp to valid range)
 const skipAudio = (seconds) => {
-    if (audioPlayer.value) {
-        audioPlayer.value.currentTime += seconds;
-    }
+  if (audioPlayer.value) {
+    const newTime = audioPlayer.value.currentTime + seconds;
+    const duration = audioPlayer.value.duration || 0;
+    // clamp 0 <= newTime <= duration
+    audioPlayer.value.currentTime = Math.min(Math.max(newTime, 0), duration);
+  }
 };
 
-// Watch audio progress and update `currentTime`
-watch(audioPlayer, (newPlayer) => {
-    if (newPlayer) {
-        newPlayer.ontimeupdate = () => {
-            currentTime.value = newPlayer.currentTime;
-        };
-    }
+// Update currentTime with audio progress
+watch(audioPlayer, (player) => {
+  if (!player) return;
+  player.ontimeupdate = () => {
+    currentTime.value = player.currentTime;
+  };
 });
 
-// Watch for audio source changes and reload audio
-watch(() => selectedAudio.value?.unique_id?.audio_file, async (newSrc) => {
-    if (newSrc && audioPlayer.value) {
-        await nextTick(); // Wait for DOM update
-        audioPlayer.value.load(); // Reload the audio source
+// OPTIONAL: only reload audio if the actual source changes
+watch(
+  () => selectedAudio.value?.audio_file?.audio_file,
+  async (newSrc, oldSrc) => {
+    if (!audioPlayer.value) return;
 
+    // Only reload if the URL really changed
+    if (newSrc && oldSrc && newSrc !== oldSrc) {
+      await nextTick();
+      audioPlayer.value.load();
     }
-});
+  }
+);
 
 // Submit transcription function (Placeholder)
 const submitTranscription = () => {
-    console.log("Submitting transcription:", transcriptionText.value);
+  console.log("Submitting transcription:", transcriptionText.value);
 };
 
-// Fetch data when component mounts
 onMounted(fetchRequests);
 </script>
 
 <template>
-    <div class="container">
-        <h1 class="title">Transcription Requests</h1>
-        <ul class="request-list">
-            <li v-for="request in transcriptionRequests" :key="request.unique_id" class="request-item">
-                <div class="request-header">
-                    <span class="request-title">{{ request.case_id }} - {{ request.narrative }}</span>
-                    <button @click="loadTranscription(request)" class="transcribe-button">Transcribe</button>
-                </div>
-            </li>
-        </ul>
-
-        <div v-if="selectedAudio" class="transcription-container">
-            <h2 class="transcription-title">Transcribing Case: {{ selectedAudio.case_id }}</h2>
-
-            <!-- Audio Player with controls -->
-            <audio ref="audioPlayer" controls class="audio-player">
-                <source :key="selectedAudio.unique_id.audio_file" :src="selectedAudio.unique_id.audio_file" type="audio/wav" />
-                Your browser does not support the audio element.
-            </audio>
-
-            <!-- Playback Control Buttons -->
-            <div class="audio-controls">
-                <button @click="playAudio" :disabled="isPlaying" class="play-button">Play</button>
-                <button @click="pauseAudio" :disabled="!isPlaying" class="pause-button">Pause</button>
-                <button @click="resetAudio" class="reset-button">Reset</button>
-            </div>
-
-            <!-- Navigation Buttons (Skip Forward & Back) -->
-            <div class="audio-navigation">
-                <button @click="skipAudio(-10)" class="skip-button">-10s</button>
-                <button @click="skipAudio(-5)" class="skip-button">-5s</button>
-                <button @click="skipAudio(5)" class="skip-button">+5s</button>
-                <button @click="skipAudio(10)" class="skip-button">+10s</button>
-            </div>
-
-            <!-- Transcription Input Field -->
-            <textarea v-model="transcriptionText" class="transcription-textarea" rows="6"
-                placeholder="Enter transcription here..."></textarea>
-
-            <!-- Display current playback time -->
-            <p class="current-time">Current Time: {{ currentTime.toFixed(2) }} seconds</p>
-            <button @click="submitTranscription" class="transcribe-button">Submit Transcription</button>
+  <div class="container">
+    <h1 class="title">Transcription Requests</h1>
+    <ul class="request-list">
+      <li
+        v-for="request in transcriptionRequests"
+        :key="request.audio_file.unique_id"
+        class="request-item"
+      >
+        <div class="request-header">
+          <span class="request-title">{{ request.case_id }} - {{ request.narrative }}</span>
+          <button @click="loadTranscription(request)" class="transcribe-button">Transcribe</button>
         </div>
+      </li>
+    </ul>
+
+    <div v-if="selectedAudio" class="transcription-container">
+      <h2 class="transcription-title">Transcribing Case: {{ selectedAudio.case_id }}</h2>
+
+      <!-- Audio Player with controls -->
+      <audio ref="audioPlayer" controls class="audio-player">
+        <source
+          :key="selectedAudio.audio_file.audio_file"
+          :src="`http://localhost:8000${selectedAudio.audio_file.audio_file}`"
+          type="audio/wav"
+        />
+        Your browser does not support the audio element.
+      </audio>
+
+      <!-- Playback Control Buttons -->
+      <div class="audio-controls">
+        <button @click="playAudio" :disabled="isPlaying" class="play-button">Play</button>
+        <button @click="pauseAudio" :disabled="!isPlaying" class="pause-button">Pause</button>
+        <button @click="resetAudio" class="reset-button">Reset</button>
+      </div>
+
+      <!-- Navigation Buttons (Skip Forward & Back) -->
+      <div class="audio-navigation">
+        <button @click="skipAudio(-10)" class="skip-button">-10s</button>
+        <button @click="skipAudio(-5)" class="skip-button">-5s</button>
+        <button @click="skipAudio(5)" class="skip-button">+5s</button>
+        <button @click="skipAudio(10)" class="skip-button">+10s</button>
+      </div>
+
+      <!-- Transcription Input Field -->
+      <textarea
+        v-model="transcriptionText"
+        class="transcription-textarea"
+        rows="6"
+        placeholder="Enter transcription here..."
+      ></textarea>
+
+      <!-- Display current playback time -->
+      <p class="current-time">
+        Current Time: {{ currentTime.toFixed(2) }} seconds
+      </p>
+      <button @click="submitTranscription" class="transcribe-button">
+        Submit Transcription
+      </button>
     </div>
+  </div>
 </template>
 
 <style scoped>

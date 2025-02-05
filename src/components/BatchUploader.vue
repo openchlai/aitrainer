@@ -35,7 +35,7 @@ export default {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
 
-                transcript.value = response.data.transcript;
+                transcript.value = response.data.model_transcript;
             } catch (error) {
                 console.error("Transcription failed:", error);
             }
