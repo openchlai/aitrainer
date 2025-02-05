@@ -149,12 +149,15 @@ function drawCharts() {
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: top;
 }
 
 .chart-container {
   width: 200px;
   height: 200px;
+  background-color: #7fd8e5;
+  color: #000;
+  border-radius: 15px;
 }
 
 .transcription-screen {
