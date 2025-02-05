@@ -247,7 +247,6 @@ async function rejectChunk() {
     currentChunk.value.is_rejected = true
     showRejectDialog.value = false
     alert('Chunk rejected successfully.')
-    goNext()
   } catch (err) {
     console.error('Error rejecting chunk:', err)
     alert('Could not reject chunk.')

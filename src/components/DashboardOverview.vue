@@ -28,39 +28,57 @@
                 <div class="progress rejected" :style="{ width: rejectedPercentage + '%' }"></div>
             </div>
             <p>
-                <span class="green-text">{{ transcribedPercentage.toFixed(1) }}% Transcribed</span> |
-                <span class="red-text">{{ rejectedPercentage.toFixed(1) }}% Rejected</span>
+                <span class="green-text">{{ transcribedPercentage.toFixed(1) }}% Transcribed</span> | <span
+                    class="red-text">{{ rejectedPercentage.toFixed(1) }}% Rejected</span>
             </p>
 
         </div>
         <h2>Select Case to Transcribe</h2>
 
         <!-- 📋 Cases Table -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Case Id</th>
-                    <th>Transcribed / Total</th>
-                    <th>Total Audio Time (s)</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(caseItem, index) in transcriptionRequests" :key="index">
-                    <td>{{ caseItem.case_id }}</td>
-                    <td>
-                        {{ caseItem.audio_file.transcribed_chunks }} /
-                        {{ caseItem.audio_file.total_chunks }}
-                    </td>
-                    <td>{{ caseItem.audio_file.duration }} s</td>
-                    <td>
-                        <button class="open-btn" @click="openTranscription(caseItem)">
-                            Open
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <!-- 📌 Pagination Controls -->
+            <div class="pagination">
+                <button @click="prevPage" :disabled="currentPage === 1">Prev</button>
+                <span>Page {{ currentPage }} of {{ totalPages }}</span>
+                <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th> <!-- ✅ New Number Column -->
+                        <th>Case Id</th>
+                        <th>Transcribed / Total</th>
+                        <th>Total Audio Time (s)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(caseItem, index) in paginatedCases" :key="index">
+                        <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td> <!-- ✅ Numbering -->
+                        <td>{{ caseItem.case_id }}</td>
+                        <td>
+                            {{ caseItem.audio_file.transcribed_chunks }} /
+                            {{ caseItem.audio_file.total_chunks }}
+                        </td>
+                        <td>{{ caseItem.audio_file.duration }} s</td>
+                        <td>
+                            <button class="open-btn" @click="openTranscription(caseItem)">
+                                Open
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 📌 Pagination Controls (Bottom) -->
+            <div class="pagination">
+                <button @click="prevPage" :disabled="currentPage === 1">Prev</button>
+                <span>Page {{ currentPage }} of {{ totalPages }}</span>
+                <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -110,6 +128,7 @@ const rejectedPercentage = computed(() => {
 // ✅ Store case details in Pinia & navigate to transcription screen
 function openTranscription(caseItem) {
     caseStore.setSelectedCase(caseItem)
+    console.log("Opening transcription for case:", caseItem.case_id);
     router.push({
         name: 'TranscriptionScreen',
         params: {
@@ -117,6 +136,36 @@ function openTranscription(caseItem) {
         }
     })
 }
+
+// 📌 Pagination Variables
+const currentPage = ref(1);
+const itemsPerPage = 10; // Number of items per page
+
+// 📌 Compute Total Pages
+const totalPages = computed(() => {
+    return Math.ceil(transcriptionRequests.value.length / itemsPerPage);
+});
+
+// 📌 Get Paginated Data
+const paginatedCases = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return transcriptionRequests.value.slice(start, end);
+});
+
+// 📌 Pagination Controls
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+    }
+};
+
+const prevPage = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--;
+    }
+};
+
 
 // ✅ Fetch data on mount
 onMounted(() => {
@@ -127,13 +176,70 @@ onMounted(() => {
 
 <style scoped>
 .green-text {
-  color: #28a745; /* Green */
-  font-weight: bold;
+    color: #28a745;
+    /* Green */
+    font-weight: bold;
+}
+
+.table-container {
+    padding: 20px;
+    text-align: center;
+}
+
+/* 📌 Pagination Controls */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.pagination button {
+    background: #131b2d;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background: #d1c8c8;
+    cursor: not-allowed;
+}
+
+/* 📌 Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.open-btn {
+    background-color: #3b5998;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.open-btn:hover {
+    background-color: #2c3e50;
 }
 
 .red-text {
-  color: #dc3545; /* Red */
-  font-weight: bold;
+    color: #dc3545;
+    /* Red */
+    font-weight: bold;
 }
 
 .dashboard-container {
