@@ -135,16 +135,18 @@ const filteredChunks = computed(() => {
 // ✅ **Draw Pie Charts**
 function drawCharts() {
   const totalChunks = notTranscribed.value.length + transcribed.value.length + rejected.value.length
-  const goodChunks = transcribed.value.length
-  const badChunks = rejected.value.length
-  const transcribedChunks = transcribed.value.length
-  const untranscribedChunks = notTranscribed.value.length
+  const totalReviewed = transcribed.value.length + rejected.value.length
+  const goodChunks = transcribed.value.length / totalReviewed * 100
+  const badChunks = rejected.value.length / totalReviewed * 100
+  const rejectedChunks = rejected.value.length / totalChunks * 100
+  const transcribedChunks = transcribed.value.length / totalChunks * 100
+  const untranscribedChunks = notTranscribed.value.length / totalChunks * 100
 
   // Good vs Bad Pie Chart
   new Chart(goodBadChart.value, {
     type: 'pie',
     data: {
-      labels: ['Good (Valid Transcriptions)', 'Bad (Rejected)'],
+      labels: ['Good (Valid Transcriptions) %', 'Bad (Rejected) %'],
       datasets: [{
         data: [goodChunks, badChunks],
         backgroundColor: ['#28a745', '#dc3545']
@@ -156,9 +158,9 @@ function drawCharts() {
   new Chart(transcriptionChart.value, {
     type: 'pie',
     data: {
-      labels: ['Transcribed', 'Untranscribed', 'Rejected'],
+      labels: ['Transcribed %', 'Untranscribed %', 'Rejected %'],
       datasets: [{
-        data: [transcribedChunks, untranscribedChunks, badChunks],
+        data: [transcribedChunks, untranscribedChunks, rejectedChunks],
         backgroundColor: ['#007bff', '#ffc107', '#dc3545']
       }]
     }
