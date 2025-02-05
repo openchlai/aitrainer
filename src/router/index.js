@@ -33,9 +33,17 @@ const routes = [
   { path: '/training-progress', name: 'training-progress', component: () => import('../components/TrainingProgressMonitor.vue') },
   { path: '/model-evaluation', name: 'model-evaluation', component: () => import('../components/ModelEvaluation.vue') },
   { path: '/transcription', name: 'transcription', component: () => import('../components/BatchUploader.vue') },
-  {path:'/model-training', name:'model-training', component: () => import('../components/ModelTraining.vue')},
-
-
+  { path: '/model-training', name: 'model-training', component: () => import('../components/ModelTraining.vue') },
+  {
+    path: '/transcription/:audioId',
+    name: 'TranscriptionScreen',
+    component: () => import('../components/TranscriptionScreen.vue'),
+  },
+  {
+    path: '/transcribing/:startIndex/:listType',
+    name: 'TranscribingScreen',
+    component: () => import('../components/TranscribingScreen.vue')
+  },
 ]
 
 const router = createRouter({

@@ -10,7 +10,6 @@ import { RouterView } from 'vue-router';
     <div class="main-container">
       <Sidebar />
       <div class="content">
-        <h1>AI Trainer</h1>
         <RouterView />
       </div>
     </div>
