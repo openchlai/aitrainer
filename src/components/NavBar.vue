@@ -5,8 +5,13 @@
         <div :class="['navbar-collapse', { show: isNavOpen }]">
             <ul class="navbar-nav">
                 <li class="nav-item"><a href="/dashboard">Dashboard</a></li>
-                <li class="nav-item"><a href="/transcription">Transcription </a></li>
-                <li class="nav-item"><a href="/model-training">Model Training </a></li>
+                <DropdownMenu title="Data Acquisition">
+                    <DropdownItem href="/dataset-management">Pre Evaluations</DropdownItem>
+                    <DropdownItem href="/model-configuration">Post Evaluation</DropdownItem>
+                    <DropdownItem href="/dashboard">Manual Transcription</DropdownItem>
+                    <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
+                    <DropdownItem href="/results">Results</DropdownItem>
+                </DropdownMenu>
                 <DropdownMenu title="Model Management">
                     <DropdownItem href="/dataset-management">Dataset Management</DropdownItem>
                     <DropdownItem href="/model-configuration">Model Configuration</DropdownItem>
@@ -14,11 +19,16 @@
                     <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
                     <DropdownItem href="/results">Results</DropdownItem>
                 </DropdownMenu>
+
+                <!-- <li class="nav-item"><a href="/transcription">Transcription </a></li> -->
+                <!-- <li class="nav-item"><a href="/model-training">Model Training </a></li> -->
+
                 <DropdownMenu title="Support">
+                    <DropdownItem href="/feedback">Feedack</DropdownItem>
                     <DropdownItem href="/help">Help & Support</DropdownItem>
                 </DropdownMenu>
                 <li class="nav-item"><a href="/deployment">Model Deployment</a></li>
-                <li class="nav-item"><a href="/feedback">User Feedback</a></li>
+                <!-- <li class="nav-item"><a href="/feedback">User Feedback</a></li> -->
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item"><a href="/login">Login</a></li>
