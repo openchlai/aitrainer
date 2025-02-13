@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: () => import('../components/DashboardOverview.vue')
+    component: () => import('../components/MainDashboard.vue')
   },
   {
     path: '/deployment',
