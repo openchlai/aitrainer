@@ -31,7 +31,10 @@
                 <!-- <li class="nav-item"><a href="/feedback">User Feedback</a></li> -->
             </ul>
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a href="/login">Login</a></li>
+                <li class="nav-item">
+                    <a v-if="!isAuthenticated" href="/login">Login</a>
+                    <a v-else href="#" @click.prevent="logout">Logout</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -54,6 +57,12 @@
         methods: {
             toggleNav() {
                 this.isNavOpen = !this.isNavOpen;
+            },
+            logout() {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+                this.isAuthenticated = false;
+                this.$router.push("/login");
             },
         },
     };
