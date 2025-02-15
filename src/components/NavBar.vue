@@ -6,8 +6,8 @@
             <ul class="navbar-nav">
                 <li class="nav-item"><a href="/dashboard">Dashboard</a></li>
                 <DropdownMenu title="Data Acquisition">
-                    <DropdownItem href="/dataset-management">Pre Evaluations</DropdownItem>
-                    <DropdownItem href="/model-configuration">Post Evaluation</DropdownItem>
+                    <DropdownItem href="/pre-eval">Pre Evaluations</DropdownItem>
+                    <DropdownItem href="/post-eval">Post Evaluation</DropdownItem>
                     <DropdownItem href="/dashboard">Manual Transcription</DropdownItem>
                     <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
                     <DropdownItem href="/results">Results</DropdownItem>

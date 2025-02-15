@@ -42,7 +42,23 @@ const routes = [
   {
     path: '/transcribing/:startIndex/:listType',
     name: 'TranscribingScreen',
-    component: () => import('../components/TranscribingScreen.vue')
+    component: () => import('../components/AudioScreen.vue')
+  },
+  { path: '/pre-eval/',
+    name: 'PreEvaluationScreen',
+    component: () => import('../components/AudioList.vue')
+  },
+  { path: '/pre-eval/evaluate/:startIndex',
+    name: 'AudioEvaluationScreen',
+    component: () => import('../components/AudioScreen.vue')
+  },
+  { path: '/post-eval/',
+    name: 'PostEvaluationScreen',
+    component: () => import('../components/ChunkList.vue')
+  },
+  { path: '/post-eval/evaluate/:startIndex',
+    name: 'ChunkEvaluationScreen',
+    component: () => import('../components/ChunkEvalScreen.vue')
   },
 ]
 

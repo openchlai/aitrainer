@@ -48,7 +48,7 @@
     <!-- Chunk Cards -->
     <div class="audio-list">
       <div v-for="(chunk, index) in filteredChunks" :key="chunk.id" class="audio-card">
-        <p>{{ "chunk_"+ chunk.order }}</p>
+        <p>{{ "chunk_" + chunk.order }}</p>
         <button class="transcribe-btn" @click="openTranscribingScreen(index, activeTab)">
           Transcribe
         </button>
@@ -113,13 +113,13 @@ function openTranscribingScreen(startIndex, listType) {
     params: { startIndex: startIndex.toString(), listType }
   })
 }
- const API_BASE_URL = 'http://127.0.0.1:8000'
+const API_BASE_URL = 'http://127.0.0.1:8000'
 
-  // Build the audio src
+// Build the audio src
 const audioSrc = computed(() => {
-    if (!caseStore.selectedCase?.audio_file) return ''
-    return `${API_BASE_URL}${caseStore.selectedCase?.audio_file.audio_file}`
-  })
+  if (!caseStore.selectedCase?.audio_file) return ''
+  return `${API_BASE_URL}${caseStore.selectedCase?.audio_file.audio_file}`
+})
 
 console.log(audioSrc)
 
@@ -185,36 +185,52 @@ function drawCharts() {
 
 .audio-header {
   display: flex;
-  flex-direction: column; /* Stack the heading above the audio player */
-  align-items: center; /* Center content horizontally */
-  justify-content: center; /* Center content vertically */
-  width: 100%; /* Ensure it expands fully */
-  max-width: 100%; /* Prevents unnecessary shrinking */
-  gap: 8px; /* Space between heading and audio */
+  flex-direction: column;
+  /* Stack the heading above the audio player */
+  align-items: center;
+  /* Center content horizontally */
+  justify-content: center;
+  /* Center content vertically */
+  width: 100%;
+  /* Ensure it expands fully */
+  max-width: 100%;
+  /* Prevents unnecessary shrinking */
+  gap: 8px;
+  /* Space between heading and audio */
   margin-bottom: 15px;
 }
 
 .audio-description {
-  max-width: 600px; /* 🔥 Limit width to 600px */
+  max-width: 600px;
+  /* 🔥 Limit width to 600px */
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* 🔥 Safari & Chrome */
+  -webkit-line-clamp: 2;
+  /* 🔥 Safari & Chrome */
   -webkit-box-orient: vertical;
-  line-clamp: 2; /* ✅ Standard property */
+  line-clamp: 2;
+  /* ✅ Standard property */
   box-orient: vertical;
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Adds '...' when text is truncated */
+  overflow: hidden;
+  /* Hide overflow */
+  text-overflow: ellipsis;
+  /* Adds '...' when text is truncated */
   font-size: 14px;
-  font-style: italic; /* 🔥 Italics */
+  font-style: italic;
+  /* 🔥 Italics */
   text-align: center;
-  line-height: 1.4; /* Adjust for better spacing */
-  max-height: 2.8em; /* Ensures it doesn't expand beyond two lines */
+  line-height: 1.4;
+  /* Adjust for better spacing */
+  max-height: 2.8em;
+  /* Ensures it doesn't expand beyond two lines */
 }
 
 
 
 .audio-player {
-  width: 100%; /* Make the audio player take full width */
-  max-width: 600px; /* Adjust the max width to fit the layout */
+  width: 100%;
+  /* Make the audio player take full width */
+  max-width: 600px;
+  /* Adjust the max width to fit the layout */
 }
 
 
