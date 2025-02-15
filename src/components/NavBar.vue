@@ -19,16 +19,11 @@
                     <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
                     <DropdownItem href="/results">Results</DropdownItem>
                 </DropdownMenu>
-
-                <!-- <li class="nav-item"><a href="/transcription">Transcription </a></li> -->
-                <!-- <li class="nav-item"><a href="/model-training">Model Training </a></li> -->
-
                 <DropdownMenu title="Support">
-                    <DropdownItem href="/feedback">Feedack</DropdownItem>
+                    <DropdownItem href="/feedback">Feedback</DropdownItem>
                     <DropdownItem href="/help">Help & Support</DropdownItem>
                 </DropdownMenu>
                 <li class="nav-item"><a href="/deployment">Model Deployment</a></li>
-                <!-- <li class="nav-item"><a href="/feedback">User Feedback</a></li> -->
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
@@ -41,8 +36,8 @@
 </template>
 
 <script>
-    import DropdownMenu from './DropdownMenu.vue';
-    import DropdownItem from './DropdownItem.vue';
+    import DropdownMenu from "./DropdownMenu.vue";
+    import DropdownItem from "./DropdownItem.vue";
 
     export default {
         components: {
@@ -54,6 +49,11 @@
                 isNavOpen: false,
             };
         },
+        computed: {
+            isAuthenticated() {
+                return !!localStorage.getItem("access_token"); // Reactively checks authentication
+            },
+        },
         methods: {
             toggleNav() {
                 this.isNavOpen = !this.isNavOpen;
@@ -61,8 +61,7 @@
             logout() {
                 localStorage.removeItem("access_token");
                 localStorage.removeItem("refresh_token");
-                this.isAuthenticated = false;
-                this.$router.push("/login");
+                this.$router.push("/login"); // Redirect after logout
             },
         },
     };

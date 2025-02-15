@@ -1,14 +1,15 @@
-// stores/caseStore.js
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
-export const useCaseStore = defineStore('caseStore', {
-  state: () => ({
-    audioList: [],        // Active audio list to be used
+export const useCaseStore = defineStore('caseStore', () => {
+  const audioList = ref([]) // Reactive state
 
-  }),
-  actions: {
-    setAudioList(chunks) {
-      this.audioList = chunks
-    },
+  const setAudioList = (chunks) => {
+    audioList.value = chunks
+  }
+
+  return {
+    audioList,
+    setAudioList
   }
 })
