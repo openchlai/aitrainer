@@ -45,10 +45,10 @@
       <button @click="goPrevious" :disabled="currentIndex === 0">
         Previous
       </button>
-      <button @click="disapproveAudio" :disabled="currentAudio.is_evaluated === false" class="reject-button">
+      <button @click="disapproveAudio" class="reject-button">
         Disapprove
       </button>
-      <button @click="approveAudio" :disabled="currentAudio.is_evaluated === true" class="save-button">
+      <button @click="approveAudio" class="save-button">
         Approve
       </button>
       <button @click="goNext" :disabled="currentIndex === totalAudios - 1">
@@ -145,14 +145,20 @@ watch(audioPlayer, (player) => {
 
   player.ontimeupdate = () => {
     currentTime.value = player.currentTime
-  }
+  };
   player.onplay = () => {
     isPlaying.value = true
-  }
+  };
   player.onpause = () => {
     isPlaying.value = false
-  }
-})
+  };
+  // Ensure duration is properly updated
+  player.onloadedmetadata = () => {
+    if (currentAudio.value) {
+      currentAudio.value.duration = player.duration;
+    }
+  };
+});
 
 // Playback methods
 function playAudio() {
@@ -168,11 +174,18 @@ function resetAudio() {
   audioPlayer.value.pause()
 }
 function skipAudio(seconds) {
-  if (!audioPlayer.value) return
-  const newTime = audioPlayer.value.currentTime + seconds
-  const duration = audioPlayer.value.duration || 0
-  audioPlayer.value.currentTime = Math.min(Math.max(newTime, 0), duration)
+  if (!audioPlayer.value) return;
+
+  // Ensure duration is loaded before modifying currentTime
+  const duration = audioPlayer.value.duration;
+  if (!duration || isNaN(duration)) return; // Prevent issues when audio is not loaded
+
+  let newTime = audioPlayer.value.currentTime + seconds;
+  newTime = Math.min(Math.max(newTime, 0), duration); // Ensure it's within valid bounds
+
+  audioPlayer.value.currentTime = newTime;
 }
+
 
 // Watch for when the dialog is shown & auto-focus the "Yes" button
 watch(showApproveDialog, async (newValue) => {
@@ -197,7 +210,7 @@ async function approveAudio() {
   if (!currentAudio.value.id) return
   try {
     const resp = await axios.patch(
-      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
+      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/approve/`,
     )
     console.log(resp.data.message)
 
@@ -217,7 +230,7 @@ async function disapproveAudio() {
   if (!currentAudio.value.id) return
   try {
     const resp = await axios.patch(
-      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
+      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/disapprove/`,
     )
     console.log(resp.data.message)
 
@@ -353,6 +366,7 @@ function goPrevious() {
   background: #28a745;
   color: white;
 }
+
 .save-button:disabled {
   cursor: not-allowed;
   background: #b2debd;

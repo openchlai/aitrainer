@@ -45,7 +45,7 @@ onMounted(async () => {
 // Function to fetch audio data
 async function fetchAudios() {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/transcriptions/cleaned-audio-files/')
+        const response = await axios.get('http://127.0.0.1:8000/api/transcriptions/cleaned-audio-files/?pending=true')
         availableAudios.value = response.data
         caseStore.setAudioList(availableAudios.value)
         errorMessage.value = ''  // Clear any previous error message
