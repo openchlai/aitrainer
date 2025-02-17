@@ -1,8 +1,16 @@
 import axios from "axios";
 
+// Determine baseURL dynamically
+const getBaseURL = () => {
+    if (window.location.hostname === "aitrainer.bitz-itc.com") {
+        return "https://edms-enpoints.bitz-itc.com/";
+    }
+    return "http://127.0.0.1:8000/api"; // Default local API
+};
+
 // Create an Axios instance
 const apiClient = axios.create({
-    baseURL: "http://127.0.0.1:8000/api", // Set your base URL
+    baseURL: getBaseURL(), // Set dynamic base URL
     headers: {
         "Content-Type": "application/json",
     },
@@ -31,7 +39,7 @@ const refreshToken = async () => {
             throw new Error("No refresh token found.");
         }
 
-        const response = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
+        const response = await axios.post(`${getBaseURL()}token/refresh/`, {
             refresh: refresh_token,
         });
 
