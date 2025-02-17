@@ -8,6 +8,7 @@
                 <option value="oldest">Oldest</option>
             </select>
         </div>
+        <FolderPicker />
         <!-- Audio Cards -->
         <div class="audio-list">
             <div v-for="(audio, index) in sortedAudios" :key="audio.id" class="audio-card">
@@ -28,7 +29,8 @@
 import { ref, onMounted, computed, nextTick } from 'vue'
 import axios from 'axios'
 import { useCaseStore } from '../stores/caseStore.js'
-import { useRouter } from 'vue-router'
+    import { useRouter } from 'vue-router'
+import FolderPicker from './FolderPicker.vue'
 
 const availableAudios = ref([])
 const sortBy = ref('oldest')
