@@ -6,8 +6,8 @@
             <ul class="navbar-nav">
                 <li class="nav-item"><a href="/dashboard">Dashboard</a></li>
                 <DropdownMenu title="Data Acquisition">
-                    <DropdownItem href="/dataset-management">Pre Evaluations</DropdownItem>
-                    <DropdownItem href="/model-configuration">Post Evaluation</DropdownItem>
+                    <DropdownItem href="/pre-eval">Pre Evaluations</DropdownItem>
+                    <DropdownItem href="/post-eval">Post Evaluation</DropdownItem>
                     <DropdownItem href="/dashboard">Manual Transcription</DropdownItem>
                     <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
                     <DropdownItem href="/results">Results</DropdownItem>
@@ -19,27 +19,25 @@
                     <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
                     <DropdownItem href="/results">Results</DropdownItem>
                 </DropdownMenu>
-
-                <!-- <li class="nav-item"><a href="/transcription">Transcription </a></li> -->
-                <!-- <li class="nav-item"><a href="/model-training">Model Training </a></li> -->
-
                 <DropdownMenu title="Support">
-                    <DropdownItem href="/feedback">Feedack</DropdownItem>
+                    <DropdownItem href="/feedback">Feedback</DropdownItem>
                     <DropdownItem href="/help">Help & Support</DropdownItem>
                 </DropdownMenu>
                 <li class="nav-item"><a href="/deployment">Model Deployment</a></li>
-                <!-- <li class="nav-item"><a href="/feedback">User Feedback</a></li> -->
             </ul>
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a href="/login">Login</a></li>
+                <li class="nav-item">
+                    <a v-if="!isAuthenticated" href="/login">Login</a>
+                    <a v-else href="#" @click.prevent="logout">Logout</a>
+                </li>
             </ul>
         </div>
     </nav>
 </template>
 
 <script>
-    import DropdownMenu from './DropdownMenu.vue';
-    import DropdownItem from './DropdownItem.vue';
+    import DropdownMenu from "./DropdownMenu.vue";
+    import DropdownItem from "./DropdownItem.vue";
 
     export default {
         components: {
@@ -51,9 +49,19 @@
                 isNavOpen: false,
             };
         },
+        computed: {
+            isAuthenticated() {
+                return !!localStorage.getItem("access_token"); // Reactively checks authentication
+            },
+        },
         methods: {
             toggleNav() {
                 this.isNavOpen = !this.isNavOpen;
+            },
+            logout() {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+                this.$router.push("/login"); // Redirect after logout
             },
         },
     };

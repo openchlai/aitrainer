@@ -1,18 +1,13 @@
 <!-- views/TranscribingScreen.vue -->
 <template>
-  <div class="transcription-screen">
+  <div class="audio-screen">
     <!-- Top Bar -->
     <div class="top-bar">
       <!-- Show chunk index + total -->
-       <p>{{ currentIndex + 1 }} / {{ totalChunks }}</p>
+      <p>{{ currentIndex + 1 }} / {{ totalAudios }}</p>
       <h2>
-        Transcribing chunk_{{ currentChunk.order }}
+        Evaluating Audio {{ currentAudio.id }}
       </h2>
-      <!-- Also show the case's narrative from the store -->
-      <p class="narration">
-        <strong>Narrative:</strong>
-        {{ caseStore.selectedCase?.narrative }}
-      </p>
     </div>
 
     <!-- Audio Player -->
@@ -34,53 +29,43 @@
       <!-- Current Time Display -->
       <div class="current-time">
         Time: {{ currentTime.toFixed(2) }}s
-        / {{ currentChunk.duration || 0 }}s
+        / {{ currentAudio.duration || 0 }}s
       </div>
     </div>
 
     <!-- Transcription Textarea -->
-    <div class="transcription-box">
+    <!-- <div class="transcription-box">
       <label for="transcription">Transcription:</label>
       <textarea id="transcription" ref="transcriptionInput" v-model="transcriptionText" rows="5"
         @keydown.enter.prevent="handleEnterKey"></textarea>
-    </div>
+    </div> -->
 
     <!-- Action Buttons -->
     <div class="action-buttons">
       <button @click="goPrevious" :disabled="currentIndex === 0">
         Previous
       </button>
-      <button @click="confirmRejection" :disabled="currentChunk.is_rejected === true" class="reject-button">
-        Reject
+      <button @click="disapproveAudio" :disabled="currentAudio.is_evaluated === false" class="reject-button">
+        Disapprove
       </button>
-      <button @click="saveChunk" class="save-button">
-        Save
+      <button @click="approveAudio" :disabled="currentAudio.is_evaluated === true" class="save-button">
+        Approve
       </button>
-      <button @click="goNext" :disabled="currentIndex === totalChunks - 1">
+      <button @click="goNext" :disabled="currentIndex === totalAudios - 1">
         Next
       </button>
     </div>
 
     <!-- Modal for "Save and go Next?" -->
-    <div v-if="showSaveDialog" class="modal-overlay" @click.self="cancelDialog">
-    <div class="modal">
-      <p>Save and go next?</p>
-      <div>
-        <button @click="cancelDialog">Cancel</button>
-        <button ref="yesButton" @click="saveAndNext">Yes</button>
+    <!-- <div v-if="showApproveDialog" class="modal-overlay" @click.self="cancelDialog">
+      <div class="modal">
+        <p>Save and go next?</p>
+        <div>
+          <button @click="cancelDialog">Cancel</button>
+          <button ref="yesButton" @click="approveAndNext">Yes</button>
+        </div>
       </div>
-    </div>
-  </div>
-    <!-- Modal for "Save and go Next?" -->
-    <div v-if="showRejectDialog" class="modal-overlay" @click.self="cancelDialog">
-    <div class="modal">
-      <p>Reject this chunk?</p>
-      <div>
-        <button @click="cancelDialog">Cancel</button>
-        <button ref="yesButton" @click="rejectChunk">Yes</button>
-      </div>
-    </div>
-  </div>
+    </div> -->
   </div>
 </template>
 
@@ -106,47 +91,45 @@ const audioPlayer = ref(null)
 const isPlaying = ref(false)
 const currentTime = ref(0)
 
-const listType = route.params.listType
+// const audioListFromStore = route.params.audioList
 
 // The typed text
-const transcriptionText = ref('')
-const showSaveDialog = ref(false)
-const showRejectDialog = ref(false)
+// const transcriptionText = ref('')
+const showApproveDialog = ref(false)
+// const showRejectDialog = ref(false)
 const yesButton = ref(null);
 
 // On mount, parse the :startIndex from route
 onMounted(() => {
+  console.log(route.params.startIndex)
   const idx = parseInt(route.params.startIndex, 10)
+  console.log(idx)
   currentIndex.value = Number.isNaN(idx) ? 0 : idx
 })
 
 
 
-const activeList = computed(() => {
-  if (listType === 'not-transcribed') return caseStore.notTranscribed
-  if (listType === 'transcribed') return caseStore.transcribed
-  if (listType === 'rejected') return caseStore.rejected
-  return []
-})
+const audioList = computed(() => caseStore.audioList)
 
-const currentChunk = computed(() => activeList.value[currentIndex.value] || {})
+const currentAudio = computed(() => audioList.value[currentIndex.value] || {})
 
 // A computed property for the total # of chunks
-const totalChunks = computed(() => activeList.value.length)
-console.log('Current chunk:', currentChunk.value)
-console.log('ActiveList:', activeList.value.length)
+const totalAudios = computed(() => audioList.value.length)
+console.log('Current Audio:', currentAudio.value)
+console.log('audioList:', audioList.value.length)
 
-transcriptionText.value = currentChunk.value.true_transcription || ''
+// transcriptionText.value = currentAudio.value.true_transcription || ''
 
 // Build the audio src
 const audioSrc = computed(() => {
-  if (!currentChunk.value.chunk_file) return ''
-  return `${API_BASE_URL}${currentChunk.value.chunk_file}`
+  if (!currentAudio.value.audio_file) return ''
+  console.log(currentAudio.value.audio_file)
+  return currentAudio.value.audio_file
 })
 
 // Whenever we switch chunks, reset playback & text
-watch(currentChunk, async () => {
-  transcriptionText.value = currentChunk.value.true_transcription || ''
+watch(currentAudio, async () => {
+  // transcriptionText.value = currentAudio.value.true_transcription || ''
   isPlaying.value = false
   currentTime.value = 0
 
@@ -192,7 +175,7 @@ function skipAudio(seconds) {
 }
 
 // Watch for when the dialog is shown & auto-focus the "Yes" button
-watch(showSaveDialog, async (newValue) => {
+watch(showApproveDialog, async (newValue) => {
   if (newValue) {
     await nextTick(); // Ensure the button is rendered before focusing
     if (yesButton.value) {
@@ -200,32 +183,27 @@ watch(showSaveDialog, async (newValue) => {
     }
   }
 });
-watch(showRejectDialog, async (newValue) => {
-  if (newValue) {
-    await nextTick(); // Ensure the button is rendered before focusing
-    if (yesButton.value) {
-      yesButton.value.focus();
-    }
-  }
-});
+// watch(showRejectDialog, async (newValue) => {
+//   if (newValue) {
+//     await nextTick(); // Ensure the button is rendered before focusing
+//     if (yesButton.value) {
+//       yesButton.value.focus();
+//     }
+//   }
+// });
 
 // Save chunk
-async function saveChunk() {
-  if (!currentChunk.value.id) return
+async function approveAudio() {
+  if (!currentAudio.value.id) return
   try {
-    const body = {
-      true_transcription: transcriptionText.value,
-      is_rejected: false
-    }
-    const resp = await axios.post(
-      `${API_BASE_URL}/api/transcription/api/chunks/${currentChunk.value.id}/update-transcription/`,
-      body
+    const resp = await axios.patch(
+      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
     )
     console.log(resp.data.message)
 
     // Update store chunk to reflect changes
-    currentChunk.value.true_transcription = transcriptionText.value
-    currentChunk.value.is_rejected = false
+    // currentAudio.value.true_transcription = transcriptionText.value
+    currentAudio.value.is_evaluated = true
 
     alert('Transcription saved successfully!')
   } catch (err) {
@@ -235,27 +213,26 @@ async function saveChunk() {
 }
 
 // Reject chunk
-async function rejectChunk() {
-  if (!currentChunk.value.id) return
+async function disapproveAudio() {
+  if (!currentAudio.value.id) return
   try {
-    const resp = await axios.post(
-      `${API_BASE_URL}/api/transcription/api/chunks/${currentChunk.value.id}/update-rejection/`,
-      { is_rejected: true }
+    const resp = await axios.patch(
+      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
     )
     console.log(resp.data.message)
 
-    currentChunk.value.is_rejected = true
-    showRejectDialog.value = false
-    alert('Chunk rejected successfully.')
+    currentAudio.value.is_evaluated = false
+    // showRejectDialog.value = false
+    alert('Audio Disapproved.')
   } catch (err) {
-    console.error('Error rejecting chunk:', err)
-    alert('Could not reject chunk.')
+    console.error('Error disapproving audio:', err)
+    alert('Could not disapporve audio.')
   }
 }
 
 // Navigation
 function goNext() {
-  if (currentIndex.value < activeList.value.length - 1) {
+  if (currentIndex.value < audioList.value.length - 1) {
     currentIndex.value++
   }
 }
@@ -265,28 +242,32 @@ function goPrevious() {
   }
 }
 
-function confirmRejection() { 
-  showRejectDialog.value = true
-}
+// function confirmNext(){
+//   showApproveDialog.value = true
+// }
+
+// function confirmRejection() {
+//   showRejectDialog.value = true
+// }
 
 // If user presses Enter, ask "Save and go next?"
-function handleEnterKey() {
-  if (!transcriptionText.value.trim()) return
-  showSaveDialog.value = true
-}
-async function saveAndNext() {
-  showSaveDialog.value = false
-  await saveChunk()
-  goNext()
-}
-function cancelDialog() {
-  showSaveDialog.value = false
-  showRejectDialog.value = false
-}
+// function handleEnterKey() {
+//   if (!transcriptionText.value.trim()) return
+//   showApproveDialog.value = true
+// // }
+// async function approveAndNext() {
+//   showApproveDialog.value = false
+//   await approveAudio()
+//   goNext()
+// }
+// function cancelDialog() {
+//   showApproveDialog.value = false
+//   showRejectDialog.value = false
+// }
 </script>
 
 <style scoped>
-.transcription-screen {
+.audio-screen {
   padding: 20px;
   background: #f0f0f0;
   color: #333;
@@ -371,6 +352,10 @@ function cancelDialog() {
 .save-button {
   background: #28a745;
   color: white;
+}
+.save-button:disabled {
+  cursor: not-allowed;
+  background: #b2debd;
 }
 
 /* Modal */
