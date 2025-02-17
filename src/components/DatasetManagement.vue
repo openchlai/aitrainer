@@ -1,101 +1,228 @@
 <template>
-    <div class="dataset-management">
-        <h2>Dataset Management</h2>
-        <input type="file" @change="handleFileUpload" accept=".csv, .json" />
-        <div v-if="dataset.length">
-            <h3>Dataset Preview</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th v-for="(header, index) in headers" :key="index">{{ header }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(row, rowIndex) in dataset.slice(0, 5)" :key="rowIndex">
-                        <td v-for="(cell, cellIndex) in row" :key="cellIndex">{{ cell }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <button @click="editDataset">Edit Dataset</button>
-        </div>
+  <div class="dataset-management">
+    <h2>Dataset Management</h2>
+    
+    <!-- Extraction Filter -->
+    <div class="filter-container">
+      <label for="startDate">From:</label>
+      <input type="date" v-model="startDate" class="date-picker" />
+      
+      <label for="endDate">To:</label>
+      <input type="date" v-model="endDate" class="date-picker" />
+      
+      <label for="extractLanguage">Language:</label>
+      <select v-model="extractLanguage" class="filter-dropdown">
+        <option value="">All Languages</option>
+        <option value="English">English</option>
+        <option value="Swahili">Swahili</option>
+        <option value="Sheng">Sheng</option>
+      </select>
+      
+      <button class="extract-btn" @click="extractDataset">Extract Transcribed Dataset</button>
     </div>
+
+    <br><br>
+
+    <!-- Search & Filtering Criteria -->
+    <div class="filters">
+      <label for="searchLanguage">Filter by Language:</label>
+      <select v-model="selectedLanguage" class="filter-dropdown">
+        <option value="">All Languages</option>
+        <option value="English">English</option>
+        <option value="Swahili">Swahili</option>
+        <option value="Sheng">Sheng</option>
+      </select>
+    </div>
+
+    <br><br>
+
+    <input type="text" v-model="searchQuery" placeholder="Search dataset..." class="search-bar" />
+    
+    <div class="dataset-grid">
+      <div v-for="dataset in filteredDatasets" :key="dataset.id" class="dataset-card">
+        <h3>{{ dataset.name }}</h3>
+        <p><strong>Language:</strong> {{ dataset.language }}</p>
+        <p><strong>Extracted:</strong> {{ dataset.date }}</p>
+        <div class="card-actions">
+          <button @click="viewDataset(dataset)">View</button>
+          <button @click="downloadDataset(dataset.id)">Download</button>
+          <button class="delete-btn" @click="deleteDataset(dataset.id)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script setup>
-    import { ref } from 'vue';
+<script>
+import axios from 'axios';
 
-    const dataset = ref([]);
-    const headers = ref([]);
-
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                if (file.name.endsWith('.csv')) {
-                    parseCSV(content);
-                } else if (file.name.endsWith('.json')) {
-                    parseJSON(content);
-                }
-            };
-            reader.readAsText(file);
-        }
+export default {
+  data() {
+    return {
+      startDate: "",
+      endDate: "",
+      extractLanguage: "", // Used for dataset extraction filter
+      selectedLanguage: "", // Used for search filter
+      searchQuery: "",
+      datasets: []
     };
-
-    const parseCSV = (content) => {
-        const lines = content.split('\n');
-        headers.value = lines[0].split(',');
-        dataset.value = lines.slice(1).map((line) => line.split(','));
-    };
-
-    const parseJSON = (content) => {
-        const jsonData = JSON.parse(content);
-        headers.value = Object.keys(jsonData[0]);
-        dataset.value = jsonData.map((item) => Object.values(item));
-    };
-
-    const editDataset = () => {
-        // Implement dataset editing functionality here
-        alert('Dataset editing functionality is not yet implemented.');
-    };
+  },
+  computed: {
+    filteredDatasets() {
+      return this.datasets.filter(dataset =>
+        dataset.name.toLowerCase().includes(this.searchQuery.toLowerCase()) &&
+        (!this.selectedLanguage || dataset.language === this.selectedLanguage) // Filters by search criteria
+      );
+    }
+  },
+  methods: {
+    async fetchDatasets() {
+      try {
+        const response = await axios.get('/api/datasets');
+        this.datasets = response.data;
+      } catch (error) {
+        console.error("Error fetching datasets:", error);
+      }
+    },
+    async extractDataset() {
+      try {
+        const response = await axios.post('/api/extract', {
+          startDate: this.startDate,
+          endDate: this.endDate,
+          language: this.extractLanguage // Only for extraction
+        });
+        this.datasets.unshift(response.data);
+      } catch (error) {
+        console.error("Error extracting dataset:", error);
+      }
+    },
+    viewDataset(dataset) {
+      alert(`Viewing details for ${dataset.name}`);
+    },
+    async downloadDataset(id) {
+      try {
+        const response = await axios.get(`/api/dataset/${id}/download`, {
+          responseType: 'blob'
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `dataset_${id}.zip`);
+        document.body.appendChild(link);
+        link.click();
+      } catch (error) {
+        console.error("Error downloading dataset:", error);
+      }
+    },
+    async deleteDataset(id) {
+      try {
+        await axios.delete(`/api/dataset/${id}`);
+        this.datasets = this.datasets.filter(dataset => dataset.id !== id);
+      } catch (error) {
+        console.error("Error deleting dataset:", error);
+      }
+    }
+  },
+  mounted() {
+    this.fetchDatasets();
+  }
+};
 </script>
 
 <style scoped>
-    .dataset-management {
-        padding: 20px;
-    }
+.dataset-management {
+  padding: 20px;
+  background: #121212;
+  color: white;
+}
 
-    input[type="file"] {
-        margin-bottom: 20px;
-    }
+.extract-btn {
+  background: #007bff;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
+.filters {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+}
 
-    th,
-    td {
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
+.filter-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
 
-    th {
-        background-color: #f2f2f2;
-    }
+.filter-dropdown {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid gray;
+  background: #1a1a1a;
+  color: white;
+  width: auto;
+}
 
-    button {
-        padding: 10px 20px;
-        background-color: #42b983;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
+.date-picker {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid gray;
+  background: #1a1a1a;
+  color: white;
+}
 
-    button:hover {
-        background-color: #369870;
-    }
+.search-bar {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  background: #1a1a1a;
+  color: white;
+  border: 1px solid gray;
+  border-radius: 5px;
+}
+
+.dataset-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.dataset-card {
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 10px;
+  width: 250px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s;
+}
+
+.dataset-card:hover {
+  transform: scale(1.05);
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+button {
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: red;
+  color: white;
+}
 </style>
