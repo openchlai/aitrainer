@@ -63,7 +63,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import apiClient from '@/utils/axios'
 
 // Pinia store
 import { useCaseStore } from '../stores/caseStore.js'
@@ -76,7 +76,7 @@ const caseStore = useCaseStore()
 const route = useRoute()
 
 // The base API if needed
-const API_BASE_URL = 'http://127.0.0.1:8000'
+// const API_BASE_URL = 'http://127.0.0.1:8000'
 
 // The current chunk index in the store’s list
 const currentIndex = ref(0)
@@ -176,7 +176,7 @@ async function saveEvaluation() {
     };
 
     try {
-        const resp = await axios.post(`${API_BASE_URL}/api/transcriptions/evaluate-chunk/${currentChunk.value.id}/`, payload);
+        const resp = await apiClient.post(`/transcriptions/evaluate-chunk/${currentChunk.value.id}/`, payload);
 
         // Handle the response
         if (resp.data.created) {
