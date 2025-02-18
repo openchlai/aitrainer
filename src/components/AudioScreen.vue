@@ -76,6 +76,9 @@ import apiClient from "@/utils/axios"
 
 // Pinia store
 import { useCaseStore } from '../stores/caseStore.js'
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
 
 const caseStore = useCaseStore()
 const route = useRoute()
@@ -217,10 +220,10 @@ async function approveAudio() {
     // currentAudio.value.true_transcription = transcriptionText.value
     currentAudio.value.is_evaluated = true
 
-    alert('Transcription saved successfully!')
+    toast.success('Audio successfully approved and chunked!')
   } catch (err) {
     console.error('Error saving transcription:', err)
-    alert('Could not save transcription.')
+    toast.error('Could not save transcription.')
   }
 }
 
@@ -235,10 +238,10 @@ async function disapproveAudio() {
 
     currentAudio.value.is_evaluated = false
     // showRejectDialog.value = false
-    alert('Audio Disapproved.')
+    toast.success('Audio Disapproved.')
   } catch (err) {
     console.error('Error disapproving audio:', err)
-    alert('Could not disapporve audio.')
+    toast.error('Could not disapporve audio.')
   }
 }
 
