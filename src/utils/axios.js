@@ -3,7 +3,7 @@ import axios from "axios";
 // Determine baseURL dynamically
 const getBaseURL = () => {
     if (window.location.hostname === "aitrainer.bitz-itc.com") {
-        return "https://edms-enpoints.bitz-itc.com/";
+        return "https://edms-enpoints.bitz-itc.com/api"; // Production API
     }
     return "http://127.0.0.1:8000/api"; // Default local API
 };
