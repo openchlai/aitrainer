@@ -104,33 +104,33 @@ const router = createRouter({
 });
 
 // Navigation Guard for Authentication
-// router.beforeEach((to, from, next) => {
-//   const token = localStorage.getItem("access_token");
-//   let isAuthenticated = false;
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem("access_token");
+  let isAuthenticated = false;
 
-//   if (token) {
-//     try {
-//       const decoded = jwtDecode(token);
-//       const now = Date.now() / 1000; // Convert to seconds
-//       if (decoded.exp > now) {
-//         isAuthenticated = true;
-//       } else {
-//         localStorage.removeItem("access_token"); // Remove expired token
-//       }
-//     } catch (error) {
-//       console.error("Invalid token:", error);
-//       localStorage.removeItem("access_token"); // Remove invalid token
-//     }
-//   }
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      const now = Date.now() / 1000; // Convert to seconds
+      if (decoded.exp > now) {
+        isAuthenticated = true;
+      } else {
+        localStorage.removeItem("access_token"); // Remove expired token
+      }
+    } catch (error) {
+      console.error("Invalid token:", error);
+      localStorage.removeItem("access_token"); // Remove invalid token
+    }
+  }
 
-//   if (to.meta.requiresAuth && !isAuthenticated) {
-//     next("/login");
-//   } else if (to.path === "/login" && isAuthenticated) {
-//     next("/dashboard");
-//   } else {
-//     next();
-//   }
-// });
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next("/login");
+  } else if (to.path === "/login" && isAuthenticated) {
+    next("/dashboard");
+  } else {
+    next();
+  }
+});
 
 
 export default router;
