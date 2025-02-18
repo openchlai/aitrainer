@@ -39,7 +39,7 @@ const refreshToken = async () => {
             throw new Error("No refresh token found.");
         }
 
-        const response = await axios.post(`${getBaseURL()}token/refresh/`, {
+        const response = await axios.post(`${getBaseURL()}/auth/token/refresh/`, {
             refresh: refresh_token,
         });
 
@@ -49,9 +49,10 @@ const refreshToken = async () => {
         onRefreshed(newAccessToken);
         return newAccessToken;
     } catch (error) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        window.location.href = "/login";
+        // localStorage.removeItem("access_token");
+        // localStorage.removeItem("refresh_token");
+        // window.location.href = "/login";
+        alert("Session expired. Please log in again.");
         return Promise.reject(error);
     }
 };
