@@ -54,9 +54,10 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
-import axios from 'axios'
+// import axios from 'axios'
 import { useCaseStore } from '../stores/caseStore.js'
-import { useRouter } from 'vue-router'
+    import { useRouter } from 'vue-router'
+import apiClient from '../utils/axios.js'
 
 const availablechunks = ref([])
 const totalChunks = computed(() => availablechunks.value.length)
@@ -77,7 +78,7 @@ onMounted(async () => {
 // Fetch statistics
 async function fetch_statistics() {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/transcriptions/chunk-statistics/')
+        const response = await apiClient.get('/transcriptions/chunk-statistics/')
         statistics.value = response.data
     } catch (error) {
         console.error('Error fetching statistics:', error)
@@ -87,7 +88,7 @@ async function fetch_statistics() {
 // Function to fetch audio data
 async function fetchchunks() {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/transcriptions/audio-chunks/')
+        const response = await apiClient.get('/transcriptions/audio-chunks/')
         availablechunks.value = response.data
         caseStore.setAudioList(availablechunks.value)
         errorMessage.value = ''  // Clear any previous error message

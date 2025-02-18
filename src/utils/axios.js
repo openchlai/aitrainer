@@ -60,9 +60,14 @@ const refreshToken = async () => {
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("access_token");
-        const isAuthRoute = config.url.includes("/login") || config.url.includes("/register");
 
-        if (token && !isAuthRoute) {
+        // List of endpoints that should NOT have Authorization headers
+        const publicEndpoints = ["/verify-otp", "/register", "/request-otp"];
+
+        // Check if the request URL contains any of the public endpoints
+        const isPublicEndpoint = publicEndpoints.some(endpoint => config.url.includes(endpoint));
+
+        if (token && !isPublicEndpoint) {
             config.headers.Authorization = `Bearer ${token}`;
         }
 
