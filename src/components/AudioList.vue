@@ -12,7 +12,7 @@
         <!-- Audio Cards -->
         <div class="audio-list">
             <div v-for="(audio, index) in sortedAudios" :key="audio.id" class="audio-card">
-                <p>{{ "audio_" + audio.id }}</p>
+                <p>{{ "audio_" + index }}</p>
                 <button class="review-btn" @click="openAudioPlayerScreen(index)">
                     Review
                 </button>

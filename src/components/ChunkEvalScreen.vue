@@ -1,20 +1,16 @@
 <template>
     <div class="audio-screen">
-        <!-- Top Bar -->
         <div class="top-bar">
-            <!-- Show chunk index + total -->
             <p>{{ currentIndex + 1 }} / {{ totalChunks }}</p>
-            <h2>Evaluating Chunk {{ currentChunk.id }}</h2>
+            <h2>Evaluating Chunk {{ currentIndex }}</h2>
         </div>
 
-        <!-- Chunk Player -->
         <div class="audio-container">
             <audio ref="audioPlayer" class="audio-player" controls>
                 <source :src="audioSrc" type="audio/wav" />
                 Your browser does not support the audio element.
             </audio>
 
-            <!-- Playback Controls -->
             <div class="playback-buttons">
                 <button @click="playChunk" :disabled="isPlaying">Play</button>
                 <button @click="pauseChunk" :disabled="!isPlaying">Pause</button>
@@ -23,35 +19,25 @@
                 <button @click="skipChunk(5)">+5s</button>
             </div>
 
-            <!-- Current Time Display -->
             <div class="current-time">
                 Time: {{ currentTime.toFixed(2) }}s / {{ currentChunk.duration || 0 }}s
             </div>
         </div>
 
-        <!-- Evaluation Checkboxes -->
         <div class="evaluation-box">
-            <label>
-                <input type="checkbox" v-model="evaluation_payload.single_speaker" /> Single Speaker
-            </label>
-            <label>
-                <input type="checkbox" v-model="evaluation_payload.speaker_overlap" /> Speaker Overlap
-            </label>
-            <label>
-                <input type="checkbox" v-model="evaluation_payload.background_noise" /> Background Noise
-            </label>
-            <label>
-                <input type="checkbox" v-model="evaluation_payload.prolonged_silence" /> Prolonged Silence
-            </label>
-            <label>
-                <input type="checkbox" v-model="evaluation_payload.Not_Speech_Rate" /> Not Speech Rate
-            </label>
-            <label>
-                <input type="checkbox" v-model="evaluation_payload.echo_noise" /> Echo Noise
-            </label>
+            <div v-for="(item, key) in evaluationOptions" :key="key" class="radio-group">
+                <label>{{ item.label }}</label>
+                <div class="radio-buttons">
+                    <label>
+                        <input type="radio" :value="true" v-model="evaluation_payload[key]" /> Yes
+                    </label>
+                    <label>
+                        <input type="radio" :value="false" v-model="evaluation_payload[key]" /> No
+                    </label>
+                </div>
+            </div>
         </div>
 
-        <!-- Save Button -->
         <div class="action-buttons">
             <button @click="goPrevious" :disabled="currentIndex === 0">Previous</button>
             <button @click="saveEvaluation" class="save-button">Save Evaluation</button>
@@ -61,146 +47,140 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
-import apiClient from '@/utils/axios'
-
-// Pinia store
-import { useCaseStore } from '../stores/caseStore.js'
+import { ref, computed, watch, onMounted, nextTick, reactive } from 'vue';
+import { useRoute } from 'vue-router';
+import apiClient from '@/utils/axios';
+import { useCaseStore } from '../stores/caseStore.js';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
+const caseStore = useCaseStore();
+const route = useRoute();
 
+const currentIndex = ref(0);
+const audioPlayer = ref(null);
+const isPlaying = ref(false);
+const currentTime = ref(0);
 
-const caseStore = useCaseStore()
-const route = useRoute()
+const evaluationOptions = {
+    dual_speaker: { label: "Dual Speaker" },
+    speaker_overlap: { label: "Speaker Overlap" },
+    background_noise: { label: "Background Noise" },
+    prolonged_silence: { label: "Prolonged Silence" },
+    not_normal_speech_rate: { label: "Not Normal Speech Rate" },
+    echo_noise: { label: "Echo Noise" },
+    incomplete_sentence: { label: "Incomplete Sentence" },
+};
 
-// The base API if needed
-// const API_BASE_URL = 'http://127.0.0.1:8000'
+const evaluation_payload = reactive({});
 
-// The current chunk index in the store’s list
-const currentIndex = ref(0)
+for (const key in evaluationOptions) {
+    evaluation_payload[key] = false;
+}
 
-// Chunk playback
-const audioPlayer = ref(null)
-const isPlaying = ref(false)
-const currentTime = ref(0)
+const audioList = computed(() => caseStore.audioList);
+const currentChunk = computed(() => audioList.value[currentIndex.value] || {});
+const totalChunks = computed(() => audioList.value.length);
+const audioSrc = computed(() => currentChunk.value.chunk_file || '');
 
-// Evaluation data
-const evaluation_payload = ref({
-    single_speaker: false,
-    speaker_overlap: false,
-    background_noise: false,
-    prolonged_silence: false,
-    Not_Speech_Rate: false,
-    echo_noise: false,
-})
+let evaluationStartTime = null;
 
-// On mount, parse the :startIndex from route
 onMounted(() => {
-    const idx = parseInt(route.params.startIndex, 10)
-    currentIndex.value = Number.isNaN(idx) ? 0 : idx
-})
+    const absoluteIndex = parseInt(route.params.absoluteIndex);
+    if (audioList.value && audioList.value.length > absoluteIndex) {
+        currentIndex.value = Number.isNaN(absoluteIndex) ? 0 : absoluteIndex;
+        evaluationStartTime = new Date(); // Capture start time
+    } else {
+        console.log(audioList.value.length);
+        console.error("Invalid audio index or audio list not loaded.");
+    }
+});
 
-const audioList = computed(() => caseStore.audioList)
-const currentChunk = computed(() => audioList.value[currentIndex.value] || {})
-const totalChunks = computed(() => audioList.value.length)
-
-// Build the audio src
-const audioSrc = computed(() => {
-    if (!currentChunk.value.chunk_file) return ''
-    return currentChunk.value.chunk_file
-})
-
-// Whenever we switch chunks, reset playback & evaluation data
 watch(currentChunk, async () => {
-    isPlaying.value = false
-    currentTime.value = 0
-    evaluation_payload.value = {
-        single_speaker: false,
-        speaker_overlap: false,
-        background_noise: false,
-        prolonged_silence: false,
-        Not_Speech_Rate: false,
-        echo_noise: false,
+    isPlaying.value = false;
+    currentTime.value = 0;
+    for (const key in evaluation_payload) {
+        evaluation_payload[key] = false;
     }
-
-    await nextTick()
+    await nextTick();
     if (audioPlayer.value) {
-        audioPlayer.value.load()
+        audioPlayer.value.load();
     }
-})
+    evaluationStartTime = new Date(); // reset start time on chunk change
+});
 
-// Watch audioPlayer to update currentTime
 watch(audioPlayer, (player) => {
-    if (!player) return
-
+    if (!player) return;
     player.ontimeupdate = () => {
-        currentTime.value = player.currentTime
-    }
+        currentTime.value = player.currentTime;
+    };
     player.onplay = () => {
-        isPlaying.value = true
-    }
+        isPlaying.value = true;
+    };
     player.onpause = () => {
-        isPlaying.value = false
-    }
-})
+        isPlaying.value = false;
+    };
+});
 
-// Playback methods
 function playChunk() {
-    if (audioPlayer.value) audioPlayer.value.play()
-}
-function pauseChunk() {
-    if (audioPlayer.value) audioPlayer.value.pause()
-}
-function resetChunk() {
-    if (!audioPlayer.value) return
-    audioPlayer.value.currentTime = 0
-    isPlaying.value = false
-    audioPlayer.value.pause()
-}
-function skipChunk(seconds) {
-    if (!audioPlayer.value) return
-    const newTime = audioPlayer.value.currentTime + seconds
-    const duration = audioPlayer.value.duration || 0
-    audioPlayer.value.currentTime = Math.min(Math.max(newTime, 0), duration)
+    if (audioPlayer.value) audioPlayer.value.play();
 }
 
-// Save evaluation
+function pauseChunk() {
+    if (audioPlayer.value) audioPlayer.value.pause();
+}
+
+function resetChunk() {
+    if (!audioPlayer.value) return;
+    audioPlayer.value.currentTime = 0;
+    isPlaying.value = false;
+    audioPlayer.value.pause();
+}
+
+function skipChunk(seconds) {
+    if (!audioPlayer.value) return;
+    const newTime = audioPlayer.value.currentTime + seconds;
+    const duration = audioPlayer.value.duration || 0;
+    audioPlayer.value.currentTime = Math.min(Math.max(newTime, 0), duration);
+}
+
 async function saveEvaluation() {
-    if (!currentChunk.value.id) return;
+    if (!currentChunk.value.unique_id) return;
+
+    const evaluationEndTime = new Date();
+    const evaluationDuration = new Date(evaluationEndTime - evaluationStartTime);
 
     const payload = {
-        ...evaluation_payload.value,
+        ...evaluation_payload,
         is_evaluated: true,
+        evaluation_start: evaluationStartTime.toISOString(),
+        evaluation_end: evaluationEndTime.toISOString(),
+        evaluation_duration: evaluationDuration.toISOString().substr(11, 8), // Format duration as HH:MM:SS
     };
 
     try {
-        const resp = await apiClient.post(`/transcriptions/evaluate-chunk/${currentChunk.value.id}/`, payload);
-
-        // Handle the response
+        const resp = await apiClient.post(`/transcriptions/audio-chunks/${currentChunk.value.unique_id}/evaluate/`, payload);
         if (resp.data.created) {
-            toast.success(`Chunk ${currentChunk.value.id} saved successfully! Evaluation ID: ${resp.data.evaluation_id}`);
-            // goNext();
+            console.log(resp.data.evaluation);
+            toast.success(`Chunk ${currentIndex.value} saved successfully! Evaluation ID: ${resp.data}`);
         } else {
-            toast.success(`Chunk ${currentChunk.value.id} updated successfully! Evaluation ID: ${resp.data.evaluation_id}`);
-            // goNext();
+            toast.success(`Chunk ${currentIndex.value} updated successfully! Evaluation ID: ${resp.data}`);
         }
     } catch (err) {
         console.error('Error saving evaluation:', err);
-        toast.error(`Could not save evaluation for chunk ${currentChunk.value.id}. Please try again.`);
+        toast.error(`Could not save evaluation for chunk ${currentIndex.value}. Please try again.`);
     }
 }
 
-// Navigation
 function goNext() {
     if (currentIndex.value < audioList.value.length - 1) {
-        currentIndex.value++
+        currentIndex.value++;
     }
 }
+
 function goPrevious() {
     if (currentIndex.value > 0) {
-        currentIndex.value--
+        currentIndex.value--;
     }
 }
 </script>
@@ -262,8 +242,8 @@ function goPrevious() {
 }
 
 .evaluation-box label {
-    display: block;
-    margin-bottom: 8px;
+    display: inline-block;
+    margin-bottom: 5px;
 }
 
 /* Action Buttons */
@@ -282,5 +262,19 @@ function goPrevious() {
 .save-button:disabled {
     cursor: not-allowed;
     background: #b2debd;
+}
+
+.radio-group {
+    margin-bottom: 8px; /* Space between radio groups */
+}
+
+.radio-buttons {
+    display: inline-flex;  /* Arrange radio buttons horizontally */
+    gap: 10px; /* Space between Yes/No buttons */
+    margin-left: 10px; /* Indent the radio buttons */
+}
+
+.radio-buttons label {
+    display: inline-block; /* Makes labels behave like inline elements */
 }
 </style>

@@ -51,7 +51,7 @@ const routes = [
     component: () => import('../components/ChunkList.vue'),
     meta: { requiresAuth: true },
   },
-  { path: '/post-eval/evaluate/:startIndex',
+  { path: '/post-eval/evaluate/:absoluteIndex',
     name: 'ChunkEvaluationScreen',
     component: () => import('../components/ChunkEvalScreen.vue'),
     meta: { requiresAuth: true },

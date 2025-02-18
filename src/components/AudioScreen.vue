@@ -6,7 +6,7 @@
       <!-- Show chunk index + total -->
       <p>{{ currentIndex + 1 }} / {{ totalAudios }}</p>
       <h2>
-        Evaluating Audio {{ currentAudio.id }}
+        Evaluating Audio {{ currentIndex }}
       </h2>
     </div>
 
@@ -72,16 +72,13 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import apiClient from "@/utils/axios"
 
 // Pinia store
 import { useCaseStore } from '../stores/caseStore.js'
 
 const caseStore = useCaseStore()
 const route = useRoute()
-
-// The base API if needed
-const API_BASE_URL = 'http://127.0.0.1:8000'
 
 // The current chunk index in the store’s list
 const currentIndex = ref(0)
@@ -207,10 +204,12 @@ watch(showApproveDialog, async (newValue) => {
 
 // Save chunk
 async function approveAudio() {
-  if (!currentAudio.value.id) return
+  console.log(currentAudio.value)
+  if (!currentAudio.value.unique_id) 
+    return
   try {
-    const resp = await axios.patch(
-      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/approve/`,
+    const resp = await apiClient.patch(
+      `/transcriptions/cleaned-audio-files/${currentAudio.value.unique_id}/approve/`,
     )
     console.log(resp.data.message)
 
@@ -227,10 +226,10 @@ async function approveAudio() {
 
 // Reject chunk
 async function disapproveAudio() {
-  if (!currentAudio.value.id) return
+  if (!currentAudio.value.unique_id) return
   try {
-    const resp = await axios.patch(
-      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/disapprove/`,
+    const resp = await apiClient.patch(
+      `/transcriptions/cleaned-audio-files/${currentAudio.value.unique_id}/disapprove/`,
     )
     console.log(resp.data.message)
 
