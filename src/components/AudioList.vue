@@ -27,7 +27,7 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
-import axios from 'axios'
+import apiClient from "@/utils/axios"
 import { useCaseStore } from '../stores/caseStore.js'
     import { useRouter } from 'vue-router'
 import FolderPicker from './FolderPicker.vue'
@@ -47,7 +47,7 @@ onMounted(async () => {
 // Function to fetch audio data
 async function fetchAudios() {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/transcriptions/cleaned-audio-files/?pending=true')
+        const response = await apiClient.get('/transcriptions/cleaned-audio-files/?pending=true')
         availableAudios.value = response.data
         caseStore.setAudioList(availableAudios.value)
         errorMessage.value = ''  // Clear any previous error message
