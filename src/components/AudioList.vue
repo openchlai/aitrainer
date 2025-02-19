@@ -12,7 +12,7 @@
         <!-- Audio Cards -->
         <div class="audio-list">
             <div v-for="(audio, index) in sortedAudios" :key="audio.id" class="audio-card">
-                <p>{{ "audio_" + audio.id }}</p>
+                <p>{{ "audio_" + index }}</p>
                 <button class="review-btn" @click="openAudioPlayerScreen(index)">
                     Review
                 </button>
@@ -27,8 +27,7 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
-    // import axios from 'axios'
-import apiClient from '../utils/axios.js'
+import apiClient from "@/utils/axios"
 import { useCaseStore } from '../stores/caseStore.js'
     import { useRouter } from 'vue-router'
 import FolderPicker from './FolderPicker.vue'
@@ -48,7 +47,7 @@ onMounted(async () => {
 // Function to fetch audio data
 async function fetchAudios() {
     try {
-        const response = await apiClient.get('/transcriptions/cleaned-audio-files/')
+        const response = await apiClient.get('/transcriptions/cleaned-audio-files/?pending=true')
         availableAudios.value = response.data
         caseStore.setAudioList(availableAudios.value)
         errorMessage.value = ''  // Clear any previous error message

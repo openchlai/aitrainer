@@ -39,7 +39,7 @@ const refreshToken = async () => {
             throw new Error("No refresh token found.");
         }
 
-        const response = await axios.post(`${getBaseURL()}/auth/token/refresh/`, {
+        const response = await axios.post(`${getBaseURL()}/auth/refresh-token/`, {
             refresh: refresh_token,
         });
 

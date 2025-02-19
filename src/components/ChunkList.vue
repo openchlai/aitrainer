@@ -31,8 +31,8 @@
             <div v-for="(audio, index) in paginatedChunks" :key="audio.id" class="audio-card">
                 <!-- Checkmark for evaluated chunks -->
                 <div v-if="audio.is_evaluated" class="checkmark">✓</div>
-                <p>{{ "chunk_" + audio.id }}</p>
-                <button class="review-btn" @click="openAudioPlayerScreen(audio)">
+                <p>{{ "chunk_" + getAbsoluteIndex(index) }}</p>
+                <button class="review-btn" @click="openAudioPlayerScreen(index)">
                     Review
                 </button>
             </div>
@@ -54,9 +54,8 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
-// import axios from 'axios'
 import { useCaseStore } from '../stores/caseStore.js'
-    import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import apiClient from '../utils/axios.js'
 
 const availablechunks = ref([])
@@ -102,7 +101,7 @@ async function fetchchunks() {
 const sortedchunks = computed(() => {
     return availablechunks.value.sort((a, b) => {
         if (sortBy.value === 'newest') {
-            return new Date(b.created_at) - new Date(a.created_at)  // Assuming there's a 'created_at' field
+            return new Date(b.created_at) - new Date(a.created_at)
         } else {
             return new Date(a.created_at) - new Date(b.created_at)
         }
@@ -135,14 +134,14 @@ function prevPage() {
     }
 }
 
-// Function to open audio player screen
-function openAudioPlayerScreen(audio) {
-    let startIndex = audio.id-1
-    console.log(startIndex.toString())
+function openAudioPlayerScreen(relativeIndex) {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const absoluteIndex = start + relativeIndex;
+
     router.push({
         name: 'ChunkEvaluationScreen',
-        params: { startIndex: startIndex.toString() }
-    })
+        params: { absoluteIndex: absoluteIndex.toString() }
+    });
 }
 
 const statistics = ref({
@@ -161,6 +160,10 @@ const unevaluatedPercentage = computed(() => {
     if (statistics.value.total_chunks === 0) return 0
     return ((statistics.value.total_unevaluated_chunks / statistics.value.total_chunks) * 100).toFixed(2)
 })
+
+function getAbsoluteIndex(relativeIndex) {
+    return (currentPage.value - 1) * itemsPerPage + relativeIndex;
+}
 </script>
 
 <style scoped>

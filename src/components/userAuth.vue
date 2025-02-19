@@ -39,6 +39,9 @@
     import { useRouter } from "vue-router";
     import apiClient from "@/utils/axios";
     import PhoneFormatter from './PhoneFormatter.vue'
+    import { useToast } from 'vue-toastification';
+
+    const toast = useToast();
 
     export default {
         components: {
@@ -74,10 +77,10 @@
                         name: name.value,
                         password: password.value, // ✅ Fixed: Now sending password
                     });
-                    alert(response.data.message);
+                    toast.success(response.data.message);
                     isRegister.value = false;
                 } catch (error) {
-                    alert(error.response?.data?.error || "Registration failed.");
+                    toast.error(error.response?.data?.error || "Registration failed.");
                 }
             };
 
@@ -86,10 +89,10 @@
                     const response = await apiClient.post("/auth/request-otp/", {
                         whatsapp_number: whatsapp_number.value,
                     });
-                    alert(response.data.message);
+                    toast.success(response.data.message);
                     otpRequested.value = true;
                 } catch (error) {
-                    alert(error.response?.data?.error || "Failed to request OTP.");
+                    toast.error(error.response?.data?.error || "Failed to request OTP.");
                 }
             };
 
@@ -104,12 +107,12 @@
                         otp: otp.value,
                     });
 
-                    alert("OTP Verified! Login successful.");
+                    toast.success("OTP Verified! Login successful.");
                     localStorage.setItem("access_token", response.data.access);
                     localStorage.setItem("refresh_token", response.data.refresh);
                     router.push("/dashboard"); // Redirect after login
                 } catch (error) {
-                    alert(error.response?.data?.error || "OTP verification failed.");
+                    toast.error(error.response?.data?.error || "OTP verification failed.");
                 }
             };
 

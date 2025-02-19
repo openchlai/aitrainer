@@ -36,23 +36,28 @@ const routes = [
   {
     path: '/transcribing/:startIndex/:listType',
     name: 'TranscribingScreen',
-    component: () => import('../components/AudioScreen.vue')
+    component: () => import('../components/AudioScreen.vue'),
+    meta: { requiresAuth: true },
   },
   { path: '/pre-eval/',
     name: 'PreEvaluationScreen',
-    component: () => import('../components/AudioList.vue')
+    component: () => import('../components/AudioList.vue'),
+    meta: { requiresAuth: true },
   },
   { path: '/pre-eval/evaluate/:startIndex',
     name: 'AudioEvaluationScreen',
-    component: () => import('../components/AudioScreen.vue')
+    component: () => import('../components/AudioScreen.vue'),
+    meta: { requiresAuth: true },
   },
   { path: '/post-eval/',
     name: 'PostEvaluationScreen',
-    component: () => import('../components/ChunkList.vue')
+    component: () => import('../components/ChunkList.vue'),
+    meta: { requiresAuth: true },
   },
-  { path: '/post-eval/evaluate/:startIndex',
+  { path: '/post-eval/evaluate/:absoluteIndex',
     name: 'ChunkEvaluationScreen',
-    component: () => import('../components/ChunkEvalScreen.vue')
+    component: () => import('../components/ChunkEvalScreen.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: "/model-configuration",

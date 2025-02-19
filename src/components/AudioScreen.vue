@@ -6,7 +6,7 @@
       <!-- Show chunk index + total -->
       <p>{{ currentIndex + 1 }} / {{ totalAudios }}</p>
       <h2>
-        Evaluating Audio {{ currentAudio.id }}
+        Evaluating Audio {{ currentIndex }}
       </h2>
     </div>
 
@@ -45,10 +45,10 @@
       <button @click="goPrevious" :disabled="currentIndex === 0">
         Previous
       </button>
-      <button @click="disapproveAudio" :disabled="currentAudio.is_evaluated === false" class="reject-button">
+      <button @click="disapproveAudio" class="reject-button">
         Disapprove
       </button>
-      <button @click="approveAudio" :disabled="currentAudio.is_evaluated === true" class="save-button">
+      <button @click="approveAudio" class="save-button">
         Approve
       </button>
       <button @click="goNext" :disabled="currentIndex === totalAudios - 1">
@@ -77,6 +77,9 @@ import apiClient from '@/utils/axios.js'
 
 // Pinia store
 import { useCaseStore } from '../stores/caseStore.js'
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
 
 const caseStore = useCaseStore()
 const route = useRoute()
@@ -145,14 +148,20 @@ watch(audioPlayer, (player) => {
 
   player.ontimeupdate = () => {
     currentTime.value = player.currentTime
-  }
+  };
   player.onplay = () => {
     isPlaying.value = true
-  }
+  };
   player.onpause = () => {
     isPlaying.value = false
-  }
-})
+  };
+  // Ensure duration is properly updated
+  player.onloadedmetadata = () => {
+    if (currentAudio.value) {
+      currentAudio.value.duration = player.duration;
+    }
+  };
+});
 
 // Playback methods
 function playAudio() {
@@ -168,11 +177,18 @@ function resetAudio() {
   audioPlayer.value.pause()
 }
 function skipAudio(seconds) {
-  if (!audioPlayer.value) return
-  const newTime = audioPlayer.value.currentTime + seconds
-  const duration = audioPlayer.value.duration || 0
-  audioPlayer.value.currentTime = Math.min(Math.max(newTime, 0), duration)
+  if (!audioPlayer.value) return;
+
+  // Ensure duration is loaded before modifying currentTime
+  const duration = audioPlayer.value.duration;
+  if (!duration || isNaN(duration)) return; // Prevent issues when audio is not loaded
+
+  let newTime = audioPlayer.value.currentTime + seconds;
+  newTime = Math.min(Math.max(newTime, 0), duration); // Ensure it's within valid bounds
+
+  audioPlayer.value.currentTime = newTime;
 }
+
 
 // Watch for when the dialog is shown & auto-focus the "Yes" button
 watch(showApproveDialog, async (newValue) => {
@@ -194,10 +210,12 @@ watch(showApproveDialog, async (newValue) => {
 
 // Save chunk
 async function approveAudio() {
-  if (!currentAudio.value.id) return
+  console.log(currentAudio.value)
+  if (!currentAudio.value.unique_id) 
+    return
   try {
     const resp = await apiClient.patch(
-      `/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
+      `/transcriptions/cleaned-audio-files/${currentAudio.value.unique_id}/approve/`,
     )
     console.log(resp.data.message)
 
@@ -205,28 +223,28 @@ async function approveAudio() {
     // currentAudio.value.true_transcription = transcriptionText.value
     currentAudio.value.is_evaluated = true
 
-    alert('Transcription saved successfully!')
+    toast.success('Audio successfully approved and chunked!')
   } catch (err) {
     console.error('Error saving transcription:', err)
-    alert('Could not save transcription.')
+    toast.error('Could not save transcription.')
   }
 }
 
 // Reject chunk
 async function disapproveAudio() {
-  if (!currentAudio.value.id) return
+  if (!currentAudio.value.unique_id) return
   try {
     const resp = await apiClient.patch(
-      `/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
+      `/transcriptions/cleaned-audio-files/${currentAudio.value.unique_id}/disapprove/`,
     )
     console.log(resp.data.message)
 
     currentAudio.value.is_evaluated = false
     // showRejectDialog.value = false
-    alert('Audio Disapproved.')
+    toast.success('Audio Disapproved.')
   } catch (err) {
     console.error('Error disapproving audio:', err)
-    alert('Could not disapporve audio.')
+    toast.error('Could not disapporve audio.')
   }
 }
 
@@ -353,6 +371,7 @@ function goPrevious() {
   background: #28a745;
   color: white;
 }
+
 .save-button:disabled {
   cursor: not-allowed;
   background: #b2debd;
