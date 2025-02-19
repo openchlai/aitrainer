@@ -72,7 +72,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+
+import apiClient from '@/utils/axios.js'
 
 // Pinia store
 import { useCaseStore } from '../stores/caseStore.js'
@@ -80,8 +81,7 @@ import { useCaseStore } from '../stores/caseStore.js'
 const caseStore = useCaseStore()
 const route = useRoute()
 
-// The base API if needed
-const API_BASE_URL = 'http://127.0.0.1:8000'
+
 
 // The current chunk index in the store’s list
 const currentIndex = ref(0)
@@ -196,8 +196,8 @@ watch(showApproveDialog, async (newValue) => {
 async function approveAudio() {
   if (!currentAudio.value.id) return
   try {
-    const resp = await axios.patch(
-      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
+    const resp = await apiClient.patch(
+      `/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
     )
     console.log(resp.data.message)
 
@@ -216,8 +216,8 @@ async function approveAudio() {
 async function disapproveAudio() {
   if (!currentAudio.value.id) return
   try {
-    const resp = await axios.patch(
-      `${API_BASE_URL}/api/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
+    const resp = await apiClient.patch(
+      `/transcriptions/cleaned-audio-files/${currentAudio.value.id}/toggle_evaluated/`,
     )
     console.log(resp.data.message)
 

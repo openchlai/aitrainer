@@ -87,7 +87,8 @@ const isPlaying = ref(false)
 const currentTime = ref(0)
 
 // Evaluation data
-const evaluation_payload = ref({
+    const evaluation_payload = ref({
+    
     single_speaker: false,
     speaker_overlap: false,
     background_noise: false,
@@ -176,7 +177,7 @@ async function saveEvaluation() {
     };
 
     try {
-        const resp = await apiClient.post(`/transcriptions/evaluate-chunk/${currentChunk.value.id}/`, payload);
+        const resp = await apiClient.post(`/transcriptions/evaluation-results/`, payload);
 
         // Handle the response
         if (resp.data.created) {

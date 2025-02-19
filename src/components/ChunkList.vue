@@ -32,7 +32,7 @@
                 <!-- Checkmark for evaluated chunks -->
                 <div v-if="audio.is_evaluated" class="checkmark">✓</div>
                 <p>{{ "chunk_" + audio.id }}</p>
-                <button class="review-btn" @click="openAudioPlayerScreen(audio.id - 1)">
+                <button class="review-btn" @click="openAudioPlayerScreen(audio)">
                     Review
                 </button>
             </div>
@@ -136,7 +136,8 @@ function prevPage() {
 }
 
 // Function to open audio player screen
-function openAudioPlayerScreen(startIndex) {
+function openAudioPlayerScreen(audio) {
+    let startIndex = audio.id-1
     console.log(startIndex.toString())
     router.push({
         name: 'ChunkEvaluationScreen',
