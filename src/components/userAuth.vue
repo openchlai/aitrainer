@@ -152,7 +152,7 @@ html, body {
     max-width: 500px;
     object-fit: contain;
     animation: float 3s ease-in-out infinite;
-}
+} 
 
 .container {
     flex: 1;

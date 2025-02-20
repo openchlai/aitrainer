@@ -52,6 +52,12 @@ const routes = [
     component: () => import('../components/ChunkEvalScreen.vue')
   },
   {
+    path: "/dataset-management",
+    name: "dataset-management",
+    component: () => import("../components/DatasetManagement.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/model-configuration",
     name: "model-configuration",
     component: () => import("../components/ModelConfiguration.vue"),
