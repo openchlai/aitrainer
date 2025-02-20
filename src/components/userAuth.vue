@@ -4,77 +4,117 @@
         <div class="welcome-section">
             <h1>Welcome to AI Trainer</h1>
             <p>Empowering Transcription Through AI.</p>
-            <img class="moving-image" :src="welcomeImage" alt="AI Speech Illustration" />
-        </div>
+            <img class="moving-image" src="../assets/welcome.svg" alt="AI Speech Illustration" />
 
-        <!-- Right Section: Login Form -->
-        <div class="auth-box">
-            <h2>{{ isLogin ? 'Sign In' : 'Create an Account' }}</h2>
-            <br>
-            <form @submit.prevent="handleSubmit">
-                <div class="input-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" v-model="email" required autofocus placeholder="Enter your email" />
-                </div>
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" v-model="password" required placeholder="Enter your password" />
-                </div>
-                <br>
-                <button type="submit" :disabled="loading">
-                    {{ loading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up' }}
-                </button>
-            </form>
-            <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
-            <p class="toggle-text" @click="toggleAuthMode">
-                {{ isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In" }}
-            </p>
         </div>
+        <!-- Right Section: Login Form -->
+        <div class="container">
+        <h2>{{ isRegister ? "Register" : "Login" }}</h2>
+        <form @submit.prevent="isRegister ? registerUser() : verifyOTP()">
+            <div class="form-group">
+                <label for="whatsapp_number">WhatsApp Number</label>
+                <input type="text" v-model="whatsapp_number" required />
+            </div>
+            <div class="form-group" v-if="isRegister">
+                <label for="name">Name</label>
+                <input type="text" v-model="name" required />
+            </div>
+             <br>
+            <div class="form-group" v-if="otpRequested">
+                <label>OTP</label>
+                <input type="text" v-model="otp" required />
+            </div>
+
+            <button type="submit">
+                {{ isRegister ? "Register" : otpRequested ? "Verify OTP" : "Request OTP" }}
+            </button>
+        </form>
+        <br>
+        <button @click="toggleMode">
+            {{ isRegister ? "Already have an account? Login" : "New user? Register" }}
+        </button>
+    </div>
     </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
-import welcomeImage from '../assets/welcome.svg';
+<script>
+    import { ref } from "vue";
+    import { useRouter } from "vue-router";
+    import apiClient from "../utils/axios.js";
+    export default {
+        setup() {
+            const whatsapp_number = ref("");
+            const name = ref("");
+            const otp = ref("");
+            const isRegister = ref(false);
+            const otpRequested = ref(false);
+            const router = useRouter();
 
-const router = useRouter();
-const email = ref('');
-const password = ref('');
-const isLogin = ref(true);
-const loading = ref(false);
-const errorMessage = ref('');
-const API_BASE_URL = 'https://your-api.com/auth'; 
+            const toggleMode = () => {
+                isRegister.value = !isRegister.value;
+                otpRequested.value = false;
+                whatsapp_number.value = "";
+                name.value = "";
+                otp.value = "";
+            };
 
-const handleSubmit = async () => {
-    errorMessage.value = '';
-    loading.value = true;
+            const registerUser = async () => {
+                try {
+                    const response = await apiClient.post("/auth/register/", {
+                        whatsapp_number: whatsapp_number.value,
+                        name: name.value,
+                    });
+                    alert(response.data.message);
+                    isRegister.value = false;
+                } catch (error) {
+                    alert(error.response?.data?.error || "Registration failed.");
+                }
+            };
 
-    try {
-        const endpoint = isLogin.value ? `${API_BASE_URL}/login` : `${API_BASE_URL}/register`;
-        const response = await axios.post(endpoint, {
-            email: email.value,
-            password: password.value,
-        });
+            const requestOTP = async () => {
+                try {
+                    const response = await apiClient.post("/auth/request-otp/", {
+                        whatsapp_number: whatsapp_number.value,
+                    });
+                    alert(response.data.message);
+                    otpRequested.value = true;
+                } catch (error) {
+                    alert(error.response?.data?.error || "Failed to request OTP.");
+                }
+            };
 
-        if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-            router.push('/dashboard'); 
-        } else {
-            errorMessage.value = response.data.message || 'Something went wrong!';
-        }
-    } catch (error) {
-        errorMessage.value = error.response?.data?.message || 'An error occurred. Please try again.';
-    } finally {
-        loading.value = false;
-    }
-};
+            const verifyOTP = async () => {
+                if (!otpRequested.value) {
+                    return requestOTP(); // Request OTP first if not already done
+                }
 
-const toggleAuthMode = () => {
-    isLogin.value = !isLogin.value;
-    errorMessage.value = ''; 
-};
+                try {
+                    const response = await apiClient.post("/auth/verify-otp/", {
+                        whatsapp_number: whatsapp_number.value,
+                        otp: otp.value,
+                    });
+
+                    alert("OTP Verified! Login successful.");
+                    localStorage.setItem("access_token", response.data.access);
+                    localStorage.setItem("refresh_token", response.data.refresh);
+                    router.push("/dashboard"); // Redirect after login
+                } catch (error) {
+                    alert(error.response?.data?.error || "OTP verification failed.");
+                }
+            };
+
+            return {
+                whatsapp_number,
+                name,
+                otp,
+                isRegister,
+                otpRequested,
+                toggleMode,
+                registerUser,
+                verifyOTP,
+            };
+        },
+    };
 </script>
 
 <style scoped>
@@ -88,40 +128,46 @@ html, body {
 
 .auth-container {
     display: flex;
-    width: 100vw;
-    min-height: 100vh; /* Ensures it takes the full height */
+    width: 90vw;
+    height: 100vh; /* Ensure full-screen coverage */
+    overflow: hidden;
 }
 
-.welcome-section, .auth-box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
 
 .welcome-section {
+    flex: 1;
     background: linear-gradient(135deg, #0a0a0a, #141414, #1f1f1f);
     color: white;
     padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    
 }
 
 .moving-image {
-    width: 75%;
+    width: 40%;
     max-width: 500px;
     object-fit: contain;
     animation: float 3s ease-in-out infinite;
 }
 
-.auth-box {
+.container {
+    flex: 1;
     background: linear-gradient(135deg, #2c2f48, #1e1f3b);
     padding: 3rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    min-height: 100vh;
+    height: 100vh; /* Full height */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 /* Form Styling */
+
 .input-group {
     width: 100%;
     max-width: 300px;
@@ -142,15 +188,19 @@ input {
 }
 
 button {
-    width: 100%;
-    padding: 10px;
+    width: auto; /* Adjusts width based on content */
+    max-width: 300px; /* Prevents it from being too wide */
+    padding: 10px 20px; /* Adds horizontal padding for a balanced look */
     background: #007bff;
     border: none;
     color: white;
     font-size: 1rem;
     border-radius: 6px;
     cursor: pointer;
+    text-align: center; /* Ensures text stays centered */
+    display: inline-block; /* Prevents unwanted stretching */
 }
+
 
 button:hover {
     background: #0056b3;
@@ -187,11 +237,8 @@ button:disabled {
     .auth-container {
         flex-direction: column;
     }
-    .welcome-section {
-        width: 100%;
-        padding: 1rem;
-    }
-    .auth-box {
+    .welcome-section, .container {
+        max-width: 100%;
         width: 100%;
     }
 }
