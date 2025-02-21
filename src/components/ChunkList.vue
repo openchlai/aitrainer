@@ -17,14 +17,13 @@
         <div class="tabs">
             <button @click="currentTab = 'not_evaluated'" :class="{ active: currentTab === 'not_evaluated' }">Not
                 Evaluated ({{ statistics.notEvaluatedChunks }})</button>
-            <button @click="currentTab = 'one_evaluation'" :class="{ active: currentTab === 'one_evaluation' }">One
+            <button @click="currentTab = 'one_evaluation'" :class="{ active: currentTab === 'one_evaluation' }">With First
                 Evaluation ({{ statistics.oneEvaluationChunks }})</button>
-            <button @click="currentTab = 'two_evaluations'" :class="{ active: currentTab === 'two_evaluations' }">Two
+            <button @click="currentTab = 'two_evaluations'" :class="{ active: currentTab === 'two_evaluations' }">With Second
                 Evaluations ({{ statistics.twoEvaluationsChunks }})</button>
         </div>
         <div v-if="currentTab != 'not_evaluated'">
-            <p> <span style="background-color: green; border-radius: 50%;"> ✓ </span> Indicates you have evaluated that
-                chunk</p>
+            <p> <span style="background-color: green; border-radius: 50%;"> ✓ </span>Indicates chunks you have evaluated</p>
         </div>
         <!-- Pagination Controls -->
         <div class="pagination">
@@ -41,7 +40,7 @@
                     <div v-if="audio.evaluated_by_user" class="checkmark">✓</div>
                     <p>{{ "chunk_" + getAbsoluteIndex(index) }}</p>
                     <button class="review-btn" @click="openAudioPlayerScreen(index)">
-                        Review
+                        Evaluate
                     </button>
                 </div>
             </div>

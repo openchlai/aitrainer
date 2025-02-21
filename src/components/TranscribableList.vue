@@ -1,20 +1,20 @@
 <template>
     <div class="audio-list-screen">
-        <!-- Sort Dropdown
+        <!-- Sort Dropdown -->
         <div class="sort">
             <label for="sort">Sort By:</label>
             <select id="sort" v-model="sortBy">
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
             </select>
-        </div> -->
-        <FolderPicker />
+        </div>
+        <!-- <FolderPicker /> -->
         <!-- Audio Cards -->
         <div class="audio-list">
             <div v-for="(audio, index) in availableAudios" :key="audio.id" class="audio-card">
                 <p>{{ "audio_" + index }}</p>
                 <button class="review-btn" @click="openAudioPlayerScreen(index)">
-                    Review
+                    Transcribe
                 </button>
             </div>
         </div>
@@ -30,7 +30,7 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 import apiClient from "@/utils/axios"
 import { useCaseStore } from '../stores/caseStore.js'
     import { useRouter } from 'vue-router'
-import FolderPicker from './FolderPicker.vue'
+// import FolderPicker from './FolderPicker.vue'
 
 const availableAudios = ref([])
 const sortBy = ref('oldest')
@@ -47,8 +47,8 @@ onMounted(async () => {
 // Function to fetch audio data
 async function fetchAudios() {
     try {
-        const response = await apiClient.get('/transcriptions/cleaned-audio-files/?pending=true')
-        availableAudios.value = response.data
+        const response = await apiClient.get('/transcriptions/transcribable/')
+        availableAudios.value = response.data.chunks_for_transcription
         caseStore.setAudioList(availableAudios.value)
         errorMessage.value = ''  // Clear any previous error message
     } catch (error) {
@@ -72,7 +72,7 @@ async function fetchAudios() {
 function openAudioPlayerScreen(startIndex) {
     console.log(startIndex.toString())
     router.push({
-        name: 'AudioEvaluationScreen',
+        name: 'ChunkTranscribingScreen',
         params: { startIndex: startIndex.toString() }
     })
 }
