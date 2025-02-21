@@ -15,15 +15,19 @@
                 <DropdownMenu title="Model Management">
                     <DropdownItem href="/dataset-management">Dataset Management</DropdownItem>
                     <DropdownItem href="/model-configuration">Model Configuration</DropdownItem>
+                    <DropdownItem href="/training-control">Training Control</DropdownItem>
                     <DropdownItem href="/training-progress">Training Progress</DropdownItem>
                     <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
                     <DropdownItem href="/results">Results</DropdownItem>
+                    <DropdownItem href="/experiment-tracking">Experiment Tracking</DropdownItem>
+                    <DropdownItem href="/deployment">Model Deployment</DropdownItem>
                 </DropdownMenu>
+
                 <DropdownMenu title="Support">
                     <DropdownItem href="/feedback">Feedback</DropdownItem>
                     <DropdownItem href="/help">Help & Support</DropdownItem>
                 </DropdownMenu>
-                <li class="nav-item"><a href="/deployment">Model Deployment</a></li>
+                <!-- <li class="nav-item"><a href="/deployment">Model Deployment</a></li> -->
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">

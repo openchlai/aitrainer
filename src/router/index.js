@@ -1,6 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DashboardOverview from "../components/DashboardOverview.vue";
 import { jwtDecode } from "jwt-decode";
+import DatasetManagement from '@/modelmanagement/DatasetManagement.vue';
+import ModelConfiguration from '@/modelmanagement/ModelConfiguration.vue';
+import TrainingControl from '@/modelmanagement/TrainingControl.vue';
+import TrainingProgress from '@/modelmanagement/TrainingProgress.vue';
+import ModelEvaluation from '@/modelmanagement/ModelEvaluation.vue';
+import Results from '@/modelmanagement/ResultsPage.vue';
+import ExperimentTracking from '@/modelmanagement/ExperimentTracking.vue';
+import ModelDeployment from '@/modelmanagement/ModelDeployment.vue';
 
 
 
@@ -39,32 +47,31 @@ const routes = [
     component: () => import('../components/AudioScreen.vue'),
     meta: { requiresAuth: true },
   },
-  { path: '/pre-eval/',
+  {
+    path: '/pre-eval/',
     name: 'PreEvaluationScreen',
     component: () => import('../components/AudioList.vue'),
     meta: { requiresAuth: true },
   },
-  { path: '/pre-eval/evaluate/:startIndex',
+  {
+    path: '/pre-eval/evaluate/:startIndex',
     name: 'AudioEvaluationScreen',
     component: () => import('../components/AudioScreen.vue'),
     meta: { requiresAuth: true },
   },
-  { path: '/post-eval/',
+  {
+    path: '/post-eval/',
     name: 'PostEvaluationScreen',
     component: () => import('../components/ChunkList.vue'),
     meta: { requiresAuth: true },
   },
-  { path: '/post-eval/evaluate/:absoluteIndex',
+  {
+    path: '/post-eval/evaluate/:absoluteIndex',
     name: 'ChunkEvaluationScreen',
     component: () => import('../components/ChunkEvalScreen.vue'),
     meta: { requiresAuth: true },
   },
-  {
-    path: "/model-configuration",
-    name: "model-configuration",
-    component: () => import("../components/ModelConfiguration.vue"),
-    meta: { requiresAuth: true },
-  },
+  
   {
     path: "/training-progress",
     name: "training-progress",
@@ -101,7 +108,18 @@ const routes = [
     component: () => import('../components/TranscribingScreen.vue'),
     meta: { requiresAuth: true },
   },
+<<<<<<< HEAD
 
+=======
+  { path: '/dataset-management', component: DatasetManagement },
+  { path: '/model-configuration', component: ModelConfiguration },
+  { path: '/training-control', component: TrainingControl },
+  { path: '/training-progress', component: TrainingProgress },
+  { path: '/model-evaluation', component: ModelEvaluation },
+  { path: '/results', component: Results },
+  { path: '/experiment-tracking', component: ExperimentTracking },
+  { path: '/model-deployment', component: ModelDeployment },
+>>>>>>> fadebf8 (Update changes)
 ];
 
 const router = createRouter({
