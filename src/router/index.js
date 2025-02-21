@@ -90,17 +90,18 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/transcription/:audioId",
-    name: "TranscriptionScreen",
-    component: () => import("../components/TranscriptionScreen.vue"),
+    path: "/manual-transcription/",
+    name: "TranscribableList",
+    component: () => import("../components/TranscribableList.vue"),
     meta: { requiresAuth: true },
   },
-  {
-    path: "/transcribing/:startIndex/:listType",
-    name: "TranscribingScreen",
-    component: () => import("@/components/TranscriptionScreen.vue"),
+  { 
+    path: '/manual-transcription/transcribe/:startIndex',
+    name: 'ChunkTranscribingScreen',
+    component: () => import('../components/TranscribingScreen.vue'),
     meta: { requiresAuth: true },
   },
+
 ];
 
 const router = createRouter({

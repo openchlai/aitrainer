@@ -8,7 +8,7 @@
                 <DropdownMenu title="Data Acquisition">
                     <DropdownItem href="/pre-eval">Pre Evaluations</DropdownItem>
                     <DropdownItem href="/post-eval">Post Evaluation</DropdownItem>
-                    <DropdownItem href="/dashboard">Manual Transcription</DropdownItem>
+                    <DropdownItem href="/manual-transcription/">Manual Transcription</DropdownItem>
                     <DropdownItem href="/model-evaluation">Model Evaluation</DropdownItem>
                     <DropdownItem href="/results">Results</DropdownItem>
                 </DropdownMenu>

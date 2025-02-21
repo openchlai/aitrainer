@@ -18,6 +18,9 @@
                 <button @click="skipChunk(-5)">-5s</button>
                 <button @click="skipChunk(5)">+5s</button>
             </div>
+            <div v-if="currentChunk.evaluated_by_user">
+                <p> <span style="background-color: green; color: white; border-radius: 50%;"> ✓ </span> You can update your evaluation</p>
+            </div>
 
             <div class="current-time">
                 Time: {{ currentTime.toFixed(2) }}s / {{ currentChunk.duration || 0 }}s
@@ -162,9 +165,9 @@ async function saveEvaluation() {
         const resp = await apiClient.post(`/transcriptions/audio-chunks/${currentChunk.value.unique_id}/evaluate/`, payload);
         if (resp.data.created) {
             console.log(resp.data.evaluation);
-            toast.success(`Chunk ${currentIndex.value} saved successfully! Evaluation ID: ${resp.data}`);
+            toast.success(`Chunk ${currentIndex.value} evaluation created successfully!`);
         } else {
-            toast.success(`Chunk ${currentIndex.value} updated successfully! Evaluation ID: ${resp.data}`);
+            toast.success(`Your evaluation for Chunk ${currentIndex.value} has been updated successfully!`);
         }
     } catch (err) {
         console.error('Error saving evaluation:', err);
@@ -265,16 +268,37 @@ function goPrevious() {
 }
 
 .radio-group {
-    margin-bottom: 8px; /* Space between radio groups */
+    margin-bottom: 8px;
+    /* Space between radio groups */
 }
 
 .radio-buttons {
-    display: inline-flex;  /* Arrange radio buttons horizontally */
-    gap: 10px; /* Space between Yes/No buttons */
-    margin-left: 10px; /* Indent the radio buttons */
+    display: inline-flex;
+    /* Arrange radio buttons horizontally */
+    gap: 10px;
+    /* Space between Yes/No buttons */
+    margin-left: 10px;
+    /* Indent the radio buttons */
 }
 
 .radio-buttons label {
-    display: inline-block; /* Makes labels behave like inline elements */
+    display: inline-block;
+    /* Makes labels behave like inline elements */
+}
+
+/* Checkmark */
+.checkmark {
+    /* position: absolute; */
+    /* top: 5px;
+    left: 5px; */
+    background: green;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
 }
 </style>
