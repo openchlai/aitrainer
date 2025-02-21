@@ -108,9 +108,6 @@ const routes = [
     component: () => import('../components/TranscribingScreen.vue'),
     meta: { requiresAuth: true },
   },
-<<<<<<< HEAD
-
-=======
   { path: '/dataset-management', component: DatasetManagement },
   { path: '/model-configuration', component: ModelConfiguration },
   { path: '/training-control', component: TrainingControl },
@@ -119,7 +116,6 @@ const routes = [
   { path: '/results', component: Results },
   { path: '/experiment-tracking', component: ExperimentTracking },
   { path: '/model-deployment', component: ModelDeployment },
->>>>>>> fadebf8 (Update changes)
 ];
 
 const router = createRouter({
