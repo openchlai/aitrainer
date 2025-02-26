@@ -1,7 +1,7 @@
 export const languages = {
     Kenya: [
-      { name: "English", initials: "en", official: true },
-      { name: "Swahili (Kiswahili)", initials: "sw", official: true },
+      { name: "English", initials: "EN", official: true },
+      { name: "Swahili (Kiswahili)", initials: "SW", official: true },
       { name: "Kikuyu (Gĩkũyũ)", initials: "KI", official: false },
       { name: "Luo (Dholuo)", initials: "LU", official: false },
       { name: "Luhya", initials: "LH", official: false },

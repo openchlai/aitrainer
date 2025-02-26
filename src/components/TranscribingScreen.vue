@@ -40,6 +40,7 @@
       <div class="gender-dropdown">
         <label v-if="genderLabel" :for="genderId">{{ genderLabel }}</label>
         <select :id="genderId" v-model="selectedGender" class="gender-select" @change="handleGender">
+          <option value="" disabled>Select Gender</option>
           <option v-if="genderPlaceholder" value="" disabled>{{ genderPlaceholder }}</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
@@ -50,7 +51,6 @@
       <div>
         <!-- Country Dropdown -->
         <div class="country-dropdown">
-          <label for="country">Select Country:</label>
           <select id="country" v-model="selectedCountry">
             <option value="" disabled>Select a country</option>
             <option v-for="(value, country) in languages" :key="country" :value="country">
@@ -61,7 +61,6 @@
 
         <!-- Language Dropdown -->
         <div class="language-dropdown">
-          <label for="language">Select Language:</label>
           <select id="language" v-model="selectedLanguage">
             <option value="" disabled>Select a language</option>
             <option v-for="(lang, index) in filteredLanguages" :key="index" :value="lang.initials">
@@ -170,6 +169,7 @@ export default {
       isPlaying.value = false;
       currentTime.value = 0;
 
+
       await nextTick();
       if (audioPlayer.value) {
         audioPlayer.value.load();
@@ -226,7 +226,7 @@ export default {
           );
 
           currentAudio.value.is_evaluated = true;
-          toast.success('Audio successfully approved and chunked!');
+          toast.success('Successfully saved Transcription details.');
         } catch (err) {
           console.error('Error saving transcription:', err);
           toast.error('Could not save transcription.');
