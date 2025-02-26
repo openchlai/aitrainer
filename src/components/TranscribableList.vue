@@ -9,9 +9,11 @@
             </select>
         </div>
         <!-- <FolderPicker /> -->
+        <p> <span style="background-color: green; border-radius: 50%;"> ✓ </span>Indicates chunk has been Transcribed</p>
         <!-- Audio Cards -->
         <div class="audio-list">
             <div v-for="(audio, index) in availableAudios" :key="audio.id" class="audio-card">
+                <div v-if="audio.feature_text!==null" class="checkmark">✓</div>
                 <p>{{ "audio_" + index }}</p>
                 <button class="review-btn" @click="openAudioPlayerScreen(index)">
                     Transcribe
@@ -120,5 +122,21 @@ function openAudioPlayerScreen(startIndex) {
     color: red;
     font-size: 16px;
     margin-top: 20px;
+}
+
+/* Checkmark */
+.checkmark {
+    /* position: absolute; */
+    top: 5px;
+    right: 5px;
+    background: green;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
 }
 </style>
