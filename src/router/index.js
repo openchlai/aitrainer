@@ -1,5 +1,16 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DashboardOverview from "../components/DashboardOverview.vue";
+import { jwtDecode } from "jwt-decode";
+import DatasetManagement from '@/modelmanagement/DatasetManagement.vue';
+import ModelConfiguration from '@/modelmanagement/ModelConfiguration.vue';
+import TrainingControl from '@/modelmanagement/TrainingControl.vue';
+import TrainingProgress from '@/modelmanagement/TrainingProgress.vue';
+import ModelEvaluation from '@/modelmanagement/ModelEvaluation.vue';
+import Results from '@/modelmanagement/ResultsPage.vue';
+import ExperimentTracking from '@/modelmanagement/ExperimentTracking.vue';
+import ModelDeployment from '@/modelmanagement/ModelDeployment.vue';
+
+
 
 const routes = [
   {
@@ -33,36 +44,34 @@ const routes = [
   {
     path: '/transcribing/:startIndex/:listType',
     name: 'TranscribingScreen',
-    component: () => import('../components/AudioScreen.vue')
+    component: () => import('../components/AudioScreen.vue'),
+    meta: { requiresAuth: true },
   },
-  { path: '/pre-eval/',
+  {
+    path: '/pre-eval/',
     name: 'PreEvaluationScreen',
-    component: () => import('../components/AudioList.vue')
+    component: () => import('../components/AudioList.vue'),
+    meta: { requiresAuth: true },
   },
-  { path: '/pre-eval/evaluate/:startIndex',
+  {
+    path: '/pre-eval/evaluate/:startIndex',
     name: 'AudioEvaluationScreen',
-    component: () => import('../components/AudioScreen.vue')
+    component: () => import('../components/AudioScreen.vue'),
+    meta: { requiresAuth: true },
   },
-  { path: '/post-eval/',
+  {
+    path: '/post-eval/',
     name: 'PostEvaluationScreen',
-    component: () => import('../components/ChunkList.vue')
+    component: () => import('../components/ChunkList.vue'),
+    meta: { requiresAuth: true },
   },
-  { path: '/post-eval/evaluate/:startIndex',
+  {
+    path: '/post-eval/evaluate/:absoluteIndex',
     name: 'ChunkEvaluationScreen',
-    component: () => import('../components/ChunkEvalScreen.vue')
-  },
-  {
-    path: "/dataset-management",
-    name: "dataset-management",
-    component: () => import("../components/DatasetManagement.vue"),
+    component: () => import('../components/ChunkEvalScreen.vue'),
     meta: { requiresAuth: true },
   },
-  {
-    path: "/model-configuration",
-    name: "model-configuration",
-    component: () => import("../components/ModelConfiguration.vue"),
-    meta: { requiresAuth: true },
-  },
+  
   {
     path: "/training-progress",
     name: "training-progress",
@@ -88,17 +97,25 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/transcription/:audioId",
-    name: "TranscriptionScreen",
-    component: () => import("../components/TranscriptionScreen.vue"),
+    path: "/manual-transcription/",
+    name: "TranscribableList",
+    component: () => import("../components/TranscribableList.vue"),
     meta: { requiresAuth: true },
   },
-  {
-    path: "/transcribing/:startIndex/:listType",
-    name: "TranscribingScreen",
-    component: () => import("@/components/TranscriptionScreen.vue"),
+  { 
+    path: '/manual-transcription/transcribe/:startIndex',
+    name: 'ChunkTranscribingScreen',
+    component: () => import('../components/TranscribingScreen.vue'),
     meta: { requiresAuth: true },
   },
+  { path: '/dataset-management', component: DatasetManagement },
+  { path: '/model-configuration', component: ModelConfiguration },
+  { path: '/training-control', component: TrainingControl },
+  { path: '/training-progress', component: TrainingProgress },
+  { path: '/model-evaluation', component: ModelEvaluation },
+  { path: '/results', component: Results },
+  { path: '/experiment-tracking', component: ExperimentTracking },
+  { path: '/model-deployment', component: ModelDeployment },
 ];
 
 const router = createRouter({
@@ -108,15 +125,32 @@ const router = createRouter({
 
 // Navigation Guard for Authentication
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem("access_token");
+  const token = localStorage.getItem("access_token");
+  let isAuthenticated = false;
+
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      const now = Date.now() / 1000; // Convert to seconds
+      if (decoded.exp > now) {
+        isAuthenticated = true;
+      } else {
+        localStorage.removeItem("access_token"); // Remove expired token
+      }
+    } catch (error) {
+      console.error("Invalid token:", error);
+      localStorage.removeItem("access_token"); // Remove invalid token
+    }
+  }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next("/login"); // Redirect to login if not authenticated
+    next("/login");
   } else if (to.path === "/login" && isAuthenticated) {
-    next("/dashboard"); // Prevent logged-in users from accessing login page
+    next("/dashboard");
   } else {
-    next(); // Proceed normally
+    next();
   }
 });
+
 
 export default router;

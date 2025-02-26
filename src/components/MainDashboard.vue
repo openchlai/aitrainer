@@ -2,61 +2,63 @@
     <div class="dashboard">
         <h1 class="text-xl font-bold">AI Project Metrics Dashboard</h1>
 
-        <div class="charts">
-            <!-- WER Over Time (Line Chart) -->
-            <div class="chart-container">
-                <h2>Word Error Rate (WER) Over Time</h2>
-                <GChart type="LineChart" :data="werData" :options="lineChartOptions" />
-            </div>
-
-            <!-- Loss Over Time (Line Chart) -->
-            <div class="chart-container">
-                <h2>Loss Over Time</h2>
-                <GChart type="LineChart" :data="lossData" :options="lineChartOptions" />
-            </div>
+        <!-- Pipeline Stage Selection -->
+        <div class="select-container">
+            <label for="stage-select">Select Pipeline Stage:</label>
+            <select id="stage-select" v-model="selectedStage">
+                <option v-for="(stage, key) in pipelineStages" :key="key" :value="key">
+                    {{ stage.name }}
+                </option>
+            </select>
         </div>
+
+        <!-- Dynamic Component Rendering -->
+        <component :is="currentComponent" />
     </div>
 </template>
 
 <script>
-    import { defineComponent, ref } from "vue";
-    import { GChart } from "vue-google-charts";
+    import { defineComponent, ref, computed } from "vue";
+    import DataCollectionMetrics from "@/dashboards/DataCollectionMetrics.vue";
+    import DataPreprocessingMetrics from "@/dashboards/DataPreprocessingMetrics.vue";
+    import ModelTrainingMetrics from "@/dashboards/ModelTrainingMetrics.vue";
+    import ModelEvaluationMetrics from "@/dashboards/ModelEvaluationMetrics.vue";
+    import ModelDeploymentMetrics from "@/dashboards/ModelDeploymentMetrics.vue";
+    import ContinuosImprovements from "../dashboards/ContinuosImprovements.vue";
+    import LeaderBoards from "../dashboards/LeaderBoards.vue";
 
     export default defineComponent({
-        components: { GChart },
+        components: {
+            DataCollectionMetrics,
+            DataPreprocessingMetrics,
+            ModelTrainingMetrics,
+            ModelEvaluationMetrics,
+            ModelDeploymentMetrics,
+            ContinuosImprovements,
+            LeaderBoards,
+        },
         setup() {
-            // Evaluation Metrics Data from JSON
-            const evalMetrics = [
-                { epoch: 0.434, eval_loss: 0.584, eval_wer: 37.75 },
-                { epoch: 0.868, eval_loss: 0.584, eval_wer: 37.75 },
-                { epoch: 1.302, eval_loss: 0.484, eval_wer: 32.02 },
-                { epoch: 1.736, eval_loss: 0.465, eval_wer: 31.16 },
-                { epoch: 2.170, eval_loss: 0.449, eval_wer: 29.91 }
-            ];
+            const selectedStage = ref("dataCollection");
 
-            // Prepare WER Data for Chart
-            const werData = ref([
-                ["Epoch", "WER (%)"],
-                ...evalMetrics.map(({ epoch, eval_wer }) => [epoch.toFixed(2), eval_wer])
-            ]);
+            // Define available pipeline stages
+            const pipelineStages = {
+                dataCollection: { name: "Data Collection & Preparation", component: "DataCollectionMetrics" },
+                dataPreprocessing: { name: "Data Preprocessing & Feature Extraction", component: "DataPreprocessingMetrics" },
+                modelTraining: { name: "Model Training & Fine-Tuning", component: "ModelTrainingMetrics" },
+                modelEvaluation: { name: "Model Evaluation", component: "ModelEvaluationMetrics" },
+                modelDeployment: { name: "Model Deployment & Inference", component: "ModelDeploymentMetrics" },
+                continousIprovments: { name: "Continuos Improvements", component: "ContinuosImprovements" },
+                leaderBoards: { name: "Leader Boards", component: "LeaderBoards" },
 
-            // Prepare Loss Data for Chart
-            const lossData = ref([
-                ["Epoch", "Loss"],
-                ...evalMetrics.map(({ epoch, eval_loss }) => [epoch.toFixed(2), eval_loss])
-            ]);
-
-            const lineChartOptions = {
-                curveType: "function",
-                legend: { position: "bottom" },
-                hAxis: { title: "Epoch" },
-                vAxis: { title: "Value" }
             };
 
+            // Dynamically load the selected component
+            const currentComponent = computed(() => pipelineStages[selectedStage.value].component);
+
             return {
-                werData,
-                lossData,
-                lineChartOptions
+                selectedStage,
+                pipelineStages,
+                currentComponent
             };
         }
     });
@@ -64,19 +66,20 @@
 
 <style>
     .dashboard {
-        max-width: 900px;
+        max-width: 1000px;
         margin: auto;
         text-align: center;
+        padding: 20px;
     }
 
-    .charts {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
+    .select-container {
+        margin: 20px 0;
     }
 
-    .chart-container {
-        width: 45%;
-        margin-bottom: 20px;
+    select {
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
     }
 </style>

@@ -1,8 +1,16 @@
 import axios from "axios";
 
+// Determine baseURL dynamically
+const getBaseURL = () => {
+    if (window.location.hostname === "aitrainer.bitz-itc.com") {
+        return "https://edms-enpoints.bitz-itc.com/api"; // Production API
+    }
+    return "http://127.0.0.1:8000/api"; // Default local API
+};
+
 // Create an Axios instance
 const apiClient = axios.create({
-    baseURL: "http://127.0.0.1:8000/api", // Set your base URL
+    baseURL: getBaseURL(), // Set dynamic base URL
     headers: {
         "Content-Type": "application/json",
     },
@@ -31,7 +39,7 @@ const refreshToken = async () => {
             throw new Error("No refresh token found.");
         }
 
-        const response = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
+        const response = await axios.post(`${getBaseURL()}/auth/refresh-token/`, {
             refresh: refresh_token,
         });
 
@@ -41,9 +49,10 @@ const refreshToken = async () => {
         onRefreshed(newAccessToken);
         return newAccessToken;
     } catch (error) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        window.location.href = "/login";
+        // localStorage.removeItem("access_token");
+        // localStorage.removeItem("refresh_token");
+        // window.location.href = "/login";
+        alert("Session expired. Please log in again.");
         return Promise.reject(error);
     }
 };
@@ -52,9 +61,14 @@ const refreshToken = async () => {
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("access_token");
-        const isAuthRoute = config.url.includes("/login") || config.url.includes("/register");
 
-        if (token && !isAuthRoute) {
+        // List of endpoints that should NOT have Authorization headers
+        const publicEndpoints = ["/verify-otp", "/register", "/request-otp"];
+
+        // Check if the request URL contains any of the public endpoints
+        const isPublicEndpoint = publicEndpoints.some(endpoint => config.url.includes(endpoint));
+
+        if (token && !isPublicEndpoint) {
             config.headers.Authorization = `Bearer ${token}`;
         }
 

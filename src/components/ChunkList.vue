@@ -1,5 +1,6 @@
 <template>
     <div class="chunk-list-screen">
+        <!-- Statistics Progress Bar -->
         <div class="statistics">
             <h2>Chunk Evaluation Progress</h2>
             <div class="progress-bar">
@@ -11,40 +12,64 @@
                 <span>Unevaluated: {{ statistics.total_unevaluated_chunks }} ({{ unevaluatedPercentage }}%)</span>
             </div>
         </div>
-        <!-- Sort Dropdown -->
-        <div class="sort">
-            <label for="sort">Sort By:</label>
-            <select id="sort" v-model="sortBy">
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-            </select>
+
+        <!-- Tabs for Chunk Categories -->
+        <div class="tabs">
+            <button @click="currentTab = 'not_evaluated'" :class="{ active: currentTab === 'not_evaluated' }">Not
+                Evaluated ({{ statistics.notEvaluatedChunks }})</button>
+            <button @click="currentTab = 'one_evaluation'" :class="{ active: currentTab === 'one_evaluation' }">With First
+                Evaluation ({{ statistics.oneEvaluationChunks }})</button>
+            <button @click="currentTab = 'two_evaluations'" :class="{ active: currentTab === 'two_evaluations' }">With Second
+                Evaluations ({{ statistics.twoEvaluationsChunks }})</button>
+        </div>
+        <div v-if="currentTab != 'not_evaluated'">
+            <p> <span style="background-color: green; border-radius: 50%;"> ✓ </span>Indicates chunks you have evaluated</p>
         </div>
         <!-- Pagination Controls -->
         <div class="pagination">
             <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
             <span>Page {{ currentPage }} of {{ totalPages }}</span>
             <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
-            <span>Total: {{ totalChunks }}</span>
+            <!-- <span>Total: {{ totalChunks }}</span> -->
         </div>
-        <!-- Audio Cards -->
-        <div class="audio-list">
-            <div v-for="(audio, index) in paginatedChunks" :key="audio.id" class="audio-card">
-                <!-- Checkmark for evaluated chunks -->
-                <div v-if="audio.is_evaluated" class="checkmark">✓</div>
-                <p>{{ "chunk_" + audio.id }}</p>
-                <button class="review-btn" @click="openAudioPlayerScreen(audio.id - 1)">
-                    Review
-                </button>
+
+        <div>
+            <div class="audio-list">
+                <div v-for="(audio, index) in paginatedChunks" :key="audio.id" class="audio-card">
+                    <!-- Checkmark for evaluated chunks -->
+                    <div v-if="audio.evaluated_by_user" class="checkmark">✓</div>
+                    <p>{{ "chunk_" + getAbsoluteIndex(index) }}</p>
+                    <button class="review-btn" @click="openAudioPlayerScreen(index)">
+                        Evaluate
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Pagination Controls -->
-        <div class="pagination">
-            <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
-            <span>Total: {{ totalChunks }}</span>
-        </div>
+        <!-- <div v-if="activeTab === 'one_evaluation'">
+            <h2>Chunks with One Evaluation</h2>
+            <div class="audio-list">
+                <div v-for="(audio, index) in oneEvaluationChunks" :key="audio.id" class="audio-card">
+                    <p>{{ "chunk_" + extractChunkNumber(audio.chunk_file) }}</p>
+                    <button class="review-btn" @click="openAudioPlayerScreen(index)">
+                        Review
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- <div v-if="activeTab === 'two_evaluations'">
+            <h2>Chunks with Two Evaluations</h2>
+            <div class="audio-list">
+                <div v-for="(audio, index) in twoEvaluationsChunks" :key="audio.id" class="audio-card">
+                    <p>{{ "chunk_" + extractChunkNumber(audio.chunk_file) }}</p>
+                    <button class="review-btn" @click="openAudioPlayerScreen(index)">
+                        Review
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
         <!-- Error Message (if any) -->
         <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
@@ -52,72 +77,105 @@
     </div>
 </template>
 
+
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue'
-import axios from 'axios'
 import { useCaseStore } from '../stores/caseStore.js'
 import { useRouter } from 'vue-router'
+import apiClient from '../utils/axios.js'
 
-const availablechunks = ref([])
-const totalChunks = computed(() => availablechunks.value.length)
-const sortBy = ref('oldest')
-const errorMessage = ref('')  // To hold any error message
 const caseStore = useCaseStore()
 const router = useRouter()
-const currentPage = ref(1) // Current page number
-const itemsPerPage = 50 // Number of items per page
 
-// Fetch chunks on mount
+const notEvaluatedChunks = ref([])
+const oneEvaluationChunks = ref([])
+const twoEvaluationsChunks = ref([])
+
+const currentTab = ref('not_evaluated') // Active tab
+const sortBy = ref('oldest')
+const errorMessage = ref('')
+const currentPage = ref(1)
+const itemsPerPage = 50
+
+const statistics = ref({
+    total_chunks: 0,
+    total_evaluated_chunks: 0,
+    total_unevaluated_chunks: 0,
+    notEvaluatedChunks: 0,
+    oneEvaluationChunks: 0,
+    twoEvaluationsChunks: 0,
+    evaluation_completion_rate: 0,
+})
+
+// Fetch chunks and statistics on mount
 onMounted(async () => {
-    await fetchchunks()
-    await fetch_statistics()
+    await fetchChunks()
+    await fetchStatistics()
     await nextTick()
 })
 
 // Fetch statistics
-async function fetch_statistics() {
+async function fetchStatistics() {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/transcriptions/chunk-statistics/')
-        statistics.value = response.data
+        const response = await apiClient.get('/transcriptions/chunk-statistics/')
+        statistics.value = {
+            total_chunks: response.data.total_chunks,
+            total_evaluated_chunks: response.data.total_chunks - response.data.not_evaluated,
+            total_unevaluated_chunks: response.data.not_evaluated,
+            notEvaluatedChunks: response.data.not_evaluated,
+            oneEvaluationChunks: response.data.one_evaluation,
+            twoEvaluationsChunks: response.data.two_evaluations,
+            evaluation_completion_rate: response.data.evaluation_completion_rate
+        }
     } catch (error) {
         console.error('Error fetching statistics:', error)
     }
 }
 
-// Function to fetch audio data
-async function fetchchunks() {
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+            ;[array[i], array[j]] = [array[j], array[i]]  // Swap elements
+    }
+    return array
+}
+
+async function fetchChunks() {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/transcriptions/audio-chunks/')
-        availablechunks.value = response.data
-        caseStore.setAudioList(availablechunks.value)
-        errorMessage.value = ''  // Clear any previous error message
+        const response = await apiClient.get('/transcriptions/evaluation-categories/')
+
+        // Shuffle manually using Fisher-Yates algorithm
+        notEvaluatedChunks.value = shuffleArray(response.data.not_evaluated || [])
+        oneEvaluationChunks.value = shuffleArray(response.data.one_evaluation || [])
+        twoEvaluationsChunks.value = shuffleArray(response.data.two_evaluations || [])
+
+        // caseStore.setAudioList([...notEvaluatedChunks.value, ...oneEvaluationChunks.value, ...twoEvaluationsChunks.value])
+        errorMessage.value = ''
     } catch (error) {
         console.error('Error fetching chunks:', error)
         errorMessage.value = 'Failed to load audio files. Please try again later.'
     }
 }
 
-// Computed property to sort chunks based on user selection
-const sortedchunks = computed(() => {
-    return availablechunks.value.sort((a, b) => {
-        if (sortBy.value === 'newest') {
-            return new Date(b.created_at) - new Date(a.created_at)  // Assuming there's a 'created_at' field
-        } else {
-            return new Date(a.created_at) - new Date(b.created_at)
-        }
-    })
+
+// Get chunks based on selected tab
+const activeChunks = computed(() => {
+    if (currentTab.value === 'not_evaluated') return notEvaluatedChunks.value
+    if (currentTab.value === 'one_evaluation') return oneEvaluationChunks.value
+    if (currentTab.value === 'two_evaluations') return twoEvaluationsChunks.value
+    return []
 })
 
 // Computed property to get paginated chunks
 const paginatedChunks = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage
     const end = start + itemsPerPage
-    return sortedchunks.value.slice(start, end)
+    return activeChunks.value.slice(start, end)
 })
 
 // Computed property to calculate total pages
 const totalPages = computed(() => {
-    return Math.ceil(sortedchunks.value.length / itemsPerPage)
+    return Math.ceil(activeChunks.value.length / itemsPerPage)
 })
 
 // Function to go to the next page
@@ -134,22 +192,19 @@ function prevPage() {
     }
 }
 
-// Function to open audio player screen
-function openAudioPlayerScreen(startIndex) {
-    console.log(startIndex.toString())
+function openAudioPlayerScreen(relativeIndex) {
+    const start = (currentPage.value - 1) * itemsPerPage
+    const absoluteIndex = start + relativeIndex
+
+    caseStore.setAudioList(activeChunks.value)
+
     router.push({
         name: 'ChunkEvaluationScreen',
-        params: { startIndex: startIndex.toString() }
+        params: { absoluteIndex: absoluteIndex.toString() }
     })
 }
 
-const statistics = ref({
-    total_chunks: 0,
-    total_evaluated_chunks: 0,
-    total_unevaluated_chunks: 0,
-})
-
-// Computed properties for percentages
+// Computed properties for progress bar percentages
 const evaluatedPercentage = computed(() => {
     if (statistics.value.total_chunks === 0) return 0
     return ((statistics.value.total_evaluated_chunks / statistics.value.total_chunks) * 100).toFixed(2)
@@ -159,7 +214,12 @@ const unevaluatedPercentage = computed(() => {
     if (statistics.value.total_chunks === 0) return 0
     return ((statistics.value.total_unevaluated_chunks / statistics.value.total_chunks) * 100).toFixed(2)
 })
+
+function getAbsoluteIndex(relativeIndex) {
+    return (currentPage.value - 1) * itemsPerPage + relativeIndex
+}
 </script>
+
 
 <style scoped>
 .chunk-list-screen {
@@ -246,7 +306,7 @@ const unevaluatedPercentage = computed(() => {
 
 .statistics {
     margin: 5px;
-    padding:5px;
+    padding: 5px;
     /* background: #f0f0f0; */
     border-radius: 8px;
     text-align: center;
@@ -281,5 +341,26 @@ const unevaluatedPercentage = computed(() => {
     margin-top: 10px;
     font-size: 14px;
     color: #ffffff;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tabs button {
+    padding: 10px 20px;
+    background: gray;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.tabs .active {
+    background: rgb(21, 169, 210);
+    color: white;
 }
 </style>

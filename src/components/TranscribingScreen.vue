@@ -6,7 +6,7 @@
       <!-- Show chunk index + total -->
       <p>{{ currentIndex + 1 }} / {{ totalAudios }}</p>
       <h2>
-        Evaluating Audio {{ currentIndex }}
+        Transcribing Chunk {{ currentIndex }}
       </h2>
     </div>
 
@@ -34,22 +34,22 @@
     </div>
 
     <!-- Transcription Textarea -->
-    <!-- <div class="transcription-box">
+    <div class="transcription-box">
       <label for="transcription">Transcription:</label>
       <textarea id="transcription" ref="transcriptionInput" v-model="transcriptionText" rows="5"
         @keydown.enter.prevent="handleEnterKey"></textarea>
-    </div> -->
+    </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
       <button @click="goPrevious" :disabled="currentIndex === 0">
         Previous
       </button>
-      <button @click="disapproveAudio" class="reject-button">
+      <!-- <button @click="disapproveAudio" class="reject-button">
         Disapprove
-      </button>
-      <button @click="approveAudio" class="save-button">
-        Approve
+      </button> -->
+      <button @click="saveTranscriptionDetails" class="save-button">
+        Save
       </button>
       <button @click="goNext" :disabled="currentIndex === totalAudios - 1">
         Next
@@ -125,9 +125,9 @@ console.log('audioList:', audioList.value.length)
 
 // Build the audio src
 const audioSrc = computed(() => {
-  if (!currentAudio.value.audio_file) return ''
-  console.log(currentAudio.value.audio_file)
-  return currentAudio.value.audio_file
+  if (!currentAudio.value.chunk_file) return ''
+  console.log(currentAudio.value.chunk_file)
+  return currentAudio.value.chunk_file
 })
 
 // Whenever we switch chunks, reset playback & text
@@ -209,13 +209,13 @@ watch(showApproveDialog, async (newValue) => {
 // });
 
 // Save chunk
-async function approveAudio() {
+async function saveTranscriptionDetails() {
   console.log(currentAudio.value)
   if (!currentAudio.value.unique_id) 
     return
   try {
     const resp = await apiClient.patch(
-      `/transcriptions/cleaned-audio-files/${currentAudio.value.unique_id}/approve/`,
+      `/transcriptions/tbd/`,
     )
     console.log(resp.data.message)
 
