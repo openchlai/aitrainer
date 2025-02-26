@@ -1,13 +1,20 @@
 <template>
-    <div class="container">
-        <h2>{{ isRegister ? "Register" : "Login" }}</h2>
+    <div class="auth-container">
+        <!-- Left Section: Welcome Message -->
+        <div class="welcome-section">
+            <h1>Welcome to AI Trainer</h1>
+            <p>Empowering Transcription Through AI.</p>
+            <img class="moving-image" src="../assets/welcome.svg" alt="AI Speech Illustration" />
 
+        </div>
+        <!-- Right Section: Login Form -->
+        <div class="container">
+        <h2>{{ isRegister ? "Register" : "Login" }}</h2>
         <form @submit.prevent="isRegister ? registerUser() : verifyOTP()">
             <div class="form-group">
                 <label for="whatsapp_number">WhatsApp Number</label>
                 <PhoneFormatter v-model="whatsapp_number" @phonenumber="handleFormattedNumber" />
             </div>
-
             <div class="form-group" v-if="isRegister">
                 <label for="name">Name</label>
                 <input type="text" v-model="name" required />
@@ -27,10 +34,11 @@
                 {{ isRegister ? "Register" : otpRequested ? "Verify OTP" : "Request OTP" }}
             </button>
         </form>
-
+        <br>
         <button @click="toggleMode">
             {{ isRegister ? "Already have an account? Login" : "New user? Register" }}
         </button>
+    </div>
     </div>
 </template>
 
@@ -133,38 +141,128 @@
 </script>
 
 <style scoped>
-    .container {
-        width: 300px;
-        margin: auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        text-align: center;
-    }
+/* Ensure full screen coverage */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrolling */
+}
 
-    .form-group {
-        margin-bottom: 10px;
-    }
+.auth-container {
+    display: flex;
+    width: 90vw;
+    height: 100vh; /* Ensure full-screen coverage */
+    overflow: hidden;
+}
 
-    input {
+
+.welcome-section {
+    flex: 1;
+    background: linear-gradient(135deg, #0a0a0a, #141414, #1f1f1f);
+    color: white;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    
+}
+
+.moving-image {
+    width: 40%;
+    max-width: 500px;
+    object-fit: contain;
+    animation: float 3s ease-in-out infinite;
+} 
+
+.container {
+    flex: 1;
+    background: linear-gradient(135deg, #2c2f48, #1e1f3b);
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    height: 100vh; /* Full height */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Form Styling */
+
+.input-group {
+    width: 100%;
+    max-width: 300px;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+button {
+    width: auto; /* Adjusts width based on content */
+    max-width: 300px; /* Prevents it from being too wide */
+    padding: 10px 20px; /* Adds horizontal padding for a balanced look */
+    background: #007bff;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center; /* Ensures text stays centered */
+    display: inline-block; /* Prevents unwanted stretching */
+}
+
+
+button:hover {
+    background: #0056b3;
+}
+
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+}
+
+.toggle-text {
+    margin-top: 1rem;
+    color: #007bff;
+    cursor: pointer;
+}
+
+.toggle-text:hover {
+    text-decoration: underline;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+    }
+    .welcome-section, .container {
+        max-width: 100%;
         width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
     }
-
-    button {
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        border: none;
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #0056b3;
-    }
+}
 </style>
