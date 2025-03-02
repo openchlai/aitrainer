@@ -138,7 +138,7 @@
 <style scoped>
     .auth-container {
         display: flex;
-        height: 100vh;
+        height: 80vh;
         width: 100%;
         background: linear-gradient(145deg, #0a0a0a, #1f1f1f);
         color: #ffffff;
@@ -232,6 +232,11 @@
     @media (max-width: 1024px) {
         .auth-container {
             flex-direction: column;
+            align-items: center;
+            height: auto;
+            width: 100%;
+            margin: 0;
+
         }
 
         .welcome-section {
@@ -244,6 +249,15 @@
     }
 
     @media (max-width: 768px) {
+        .auth-container {
+            flex-direction: column;
+            align-items: center;
+            height: auto;
+            width: 100%;
+            margin: 0;
+
+        }
+
         .moving-image {
             width: 70%;
         }
