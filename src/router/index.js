@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import DashboardOverview from "../components/DashboardOverview.vue";
+import DashboardOverview from "../components/MainDashboard.vue";
 import { jwtDecode } from "jwt-decode";
 import DatasetManagement from '@/modelmanagement/DatasetManagement.vue';
 import ModelConfiguration from '@/modelmanagement/ModelConfiguration.vue';
