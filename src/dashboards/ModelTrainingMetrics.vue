@@ -218,9 +218,9 @@
           if (data.length > 0) {
             const latestData = data[data.length - 1];
             currentStep.value = latestData.step;
-            currentLoss.value = latestData.loss.toFixed(4);
-            currentGradNorm.value = latestData.grad_norm.toFixed(4);
-            currentLearningRate.value = latestData.learning_rate.toExponential(4);
+            currentLoss.value = latestData.loss.toFixed(6);
+            currentGradNorm.value = latestData.grad_norm.toFixed(5);
+            currentLearningRate.value = latestData.learning_rate.toExponential(8);
           }
           
         } catch (error) {
@@ -394,6 +394,15 @@
     background-color: white;
     min-width: 300px;
     font-size: 14px;
+  }
+  .session-selection label {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .session-selection select {
+    font-size: 14px;
+    color: #333;
   }
   
   .loading-indicator {
