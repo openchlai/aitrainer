@@ -49,9 +49,9 @@ const refreshToken = async () => {
         onRefreshed(newAccessToken);
         return newAccessToken;
     } catch (error) {
-        // localStorage.removeItem("access_token");
-        // localStorage.removeItem("refresh_token");
-        // window.location.href = "/login";
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "/login";
         alert("Session expired. Please log in again.");
         return Promise.reject(error);
     }
