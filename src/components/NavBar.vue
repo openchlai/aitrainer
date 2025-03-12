@@ -4,8 +4,10 @@
         <button class="navbar-toggle" @click="toggleNav">☰</button>
         <div :class="['navbar-collapse', { show: isNavOpen }]">
             <ul class="navbar-nav">
+                <li class="nav-item"><a href="/project-selection">Projects</a></li>
                 <li class="nav-item"><a href="/dashboard">Dashboard</a></li>
                 <DropdownMenu title="Data Acquisition">
+                    <DropdownItem href="/audio-upload">Raw Audio Upload</DropdownItem>
                     <DropdownItem href="/pre-eval">Pre Evaluations</DropdownItem>
                     <DropdownItem href="/post-eval">Post Evaluation</DropdownItem>
                     <DropdownItem href="/manual-transcription/">Manual Transcription</DropdownItem>

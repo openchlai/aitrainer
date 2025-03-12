@@ -125,9 +125,9 @@ console.log('audioList:', audioList.value.length)
 
 // Build the audio src
 const audioSrc = computed(() => {
-  if (!currentAudio.value.audio_file) return ''
-  console.log(currentAudio.value.audio_file)
-  return currentAudio.value.audio_file
+  if (!currentAudio.value.processed_file) return ''
+  console.log(currentAudio.value.processed_file)
+  return currentAudio.value.processed_file
 })
 
 // Whenever we switch chunks, reset playback & text

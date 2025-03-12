@@ -1,4 +1,7 @@
 import axios from "axios";
+// Import the store this way to avoid composition API issues in interceptors
+import { storeToRefs } from 'pinia';
+import { useProjectStore } from "@/stores/project";
 
 // Determine baseURL dynamically
 const getBaseURL = () => {
@@ -57,7 +60,7 @@ const refreshToken = async () => {
     }
 };
 
-// Request Interceptor: Attach Authorization Token
+// Request Interceptor: Attach Authorization Token and Project ID
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("access_token");
@@ -70,6 +73,34 @@ apiClient.interceptors.request.use(
 
         if (token && !isPublicEndpoint) {
             config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Add Project ID to headers for authenticated requests
+        // List of endpoints that should NOT have Project ID headers
+        const projectExemptEndpoints = [
+            "/register/", 
+            "/projects/", 
+        ];
+        
+        // Check if the request URL contains any exempted endpoints
+        const isProjectExempt = projectExemptEndpoints.some(endpoint => config.url.includes(endpoint));
+
+        // Only add project ID for authenticated and non-exempt requests
+        if (!isPublicEndpoint && !isProjectExempt) {
+            // Get project ID from localStorage directly rather than using the store
+            // This avoids composition API context issues in interceptors
+            const currentProjectId = localStorage.getItem("currentProjectId");
+            
+            if (currentProjectId) {
+                // Add the project ID header - make sure the header name matches what your backend expects
+                config.headers["X-Project-ID"] = currentProjectId;
+                
+                // Log to debug (remove in production)
+                console.log(`Added project ID ${currentProjectId} to request: ${config.url}`);
+            } else {
+                console.warn(`No project selected for request: ${config.url}`);
+                // You could add automatic redirection logic here if needed
+            }
         }
 
         return config;

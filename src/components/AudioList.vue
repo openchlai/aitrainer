@@ -1,13 +1,5 @@
 <template>
     <div class="audio-list-screen">
-        <!-- Sort Dropdown
-        <div class="sort">
-            <label for="sort">Sort By:</label>
-            <select id="sort" v-model="sortBy">
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-            </select>
-        </div> -->
         <FolderPicker />
         <!-- Audio Cards -->
         <div class="audio-list">
@@ -29,7 +21,7 @@
 import { ref, onMounted, computed, nextTick } from 'vue'
 import apiClient from "@/utils/axios"
 import { useCaseStore } from '../stores/caseStore.js'
-    import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import FolderPicker from './FolderPicker.vue'
 
 const availableAudios = ref([])
@@ -47,7 +39,8 @@ onMounted(async () => {
 // Function to fetch audio data
 async function fetchAudios() {
     try {
-        const response = await apiClient.get('/transcriptions/cleaned-audio-files/?pending=true')
+        // const response = await apiClient.get('/transcriptions/cleaned-audio-files/?pending=true')
+        const response = await apiClient.get('/transcriptions/processed-audio-files/')
         availableAudios.value = response.data
         caseStore.setAudioList(availableAudios.value)
         errorMessage.value = ''  // Clear any previous error message

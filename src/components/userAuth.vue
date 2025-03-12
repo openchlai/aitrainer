@@ -85,7 +85,7 @@
                     toast.success(response.data.message);
                     toggleMode();
                 } catch (error) {
-                    toast.error("Registration failed.");
+                    toast.error(`Registration failed: ${error.response.data.error}`);
                 }
             };
 
@@ -97,7 +97,7 @@
                     otpRequested.value = true;
                     toast.success(response.data.message);
                 } catch (error) {
-                    toast.error("OTP request failed.");
+                    toast.error(`OTP request failed: ${error.response.data.error}`);
                 }
             };
 
@@ -115,7 +115,7 @@
                     localStorage.setItem("access_token", response.data.access);
                     router.push("/dashboard");
                 } catch (error) {
-                    toast.error("Invalid OTP.");
+                    toast.error(`Invalid OTP: ${error.response.data.error}`);
                 }
             };
 
