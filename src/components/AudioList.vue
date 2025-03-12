@@ -39,8 +39,7 @@ onMounted(async () => {
 // Function to fetch audio data
 async function fetchAudios() {
     try {
-        // const response = await apiClient.get('/transcriptions/cleaned-audio-files/?pending=true')
-        const response = await apiClient.get('/transcriptions/processed-audio-files/')
+        const response = await apiClient.get('/transcriptions/processed-audio-files/?pending=true')
         availableAudios.value = response.data
         caseStore.setAudioList(availableAudios.value)
         errorMessage.value = ''  // Clear any previous error message
