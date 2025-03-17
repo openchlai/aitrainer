@@ -1,6 +1,9 @@
 <template>
     <nav class="navbar">
-        <div class="navbar-brand">AI Model Trainer</div>
+        <div>
+            <div class="navbar-brand">AI Model Trainer</div>
+            <div style="font-style: italic;">{{ currentProjectName }}</div>
+        </div>
         <button class="navbar-toggle" @click="toggleNav">☰</button>
         <div :class="['navbar-collapse', { show: isNavOpen }]">
             <ul class="navbar-nav">
@@ -42,110 +45,113 @@
 </template>
 
 <script>
-    import DropdownMenu from "./DropdownMenu.vue";
-    import DropdownItem from "./DropdownItem.vue";
+import DropdownMenu from "./DropdownMenu.vue";
+import DropdownItem from "./DropdownItem.vue";
 
-    export default {
-        components: {
-            DropdownMenu,
-            DropdownItem,
+export default {
+    components: {
+        DropdownMenu,
+        DropdownItem,
+    },
+    data() {
+        return {
+            isNavOpen: false,
+        };
+    },
+    computed: {
+        isAuthenticated() {
+            return !!localStorage.getItem("access_token"); // Reactively checks authentication
         },
-        data() {
-            return {
-                isNavOpen: false,
-            };
+        currentProjectName() {
+            return localStorage.getItem("currentProjectName") || "No Project Selected";
+        }
+    },
+    methods: {
+        toggleNav() {
+            this.isNavOpen = !this.isNavOpen;
         },
-        computed: {
-            isAuthenticated() {
-                return !!localStorage.getItem("access_token"); // Reactively checks authentication
-            },
+        logout() {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            this.$router.push("/login"); // Redirect after logout
         },
-        methods: {
-            toggleNav() {
-                this.isNavOpen = !this.isNavOpen;
-            },
-            logout() {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("refresh_token");
-                this.$router.push("/login"); // Redirect after logout
-            },
-        },
-    };
+    },
+};
 </script>
 
 <style>
-    .navbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #17a2b8;
-        padding: 0.5rem 1rem;
-        color: white;
-    }
+.navbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #17a2b8;
+    padding: 0.5rem 1rem;
+    color: white;
+}
 
-    .navbar-brand {
-        font-size: 1.25rem;
-        font-weight: bold;
-    }
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
 
-    .navbar-toggle {
-        font-size: 1.25rem;
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-    }
+.navbar-toggle {
+    font-size: 1.25rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
 
+.navbar-collapse {
+    display: none;
+    flex-basis: 100%;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.navbar-collapse.show {
+    display: flex;
+}
+
+.navbar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar-nav.ml-auto {
+    margin-left: auto;
+}
+
+.nav-item {
+    margin: 0.5rem 0;
+}
+
+.nav-item a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-item a:hover {
+    text-decoration: underline;
+}
+
+@media (min-width: 992px) {
     .navbar-collapse {
-        display: none;
-        flex-basis: 100%;
-        flex-grow: 1;
-        align-items: center;
-    }
-
-    .navbar-collapse.show {
-        display: flex;
+        display: flex !important;
+        flex-basis: auto;
+        flex-direction: row;
     }
 
     .navbar-nav {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .navbar-nav.ml-auto {
-        margin-left: auto;
+        flex-direction: row;
     }
 
     .nav-item {
-        margin: 0.5rem 0;
+        margin: 0 0.5rem;
     }
-
-    .nav-item a {
-        color: white;
-        text-decoration: none;
-    }
-
-    .nav-item a:hover {
-        text-decoration: underline;
-    }
-
-    @media (min-width: 992px) {
-        .navbar-collapse {
-            display: flex !important;
-            flex-basis: auto;
-            flex-direction: row;
-        }
-
-        .navbar-nav {
-            flex-direction: row;
-        }
-
-        .nav-item {
-            margin: 0 0.5rem;
-        }
-    }
+}
 </style>

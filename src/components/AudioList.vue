@@ -1,6 +1,6 @@
 <template>
     <div class="audio-list-screen">
-        <FolderPicker />
+        <h2>Preprocessed Raw Audios</h2>
         <!-- Audio Cards -->
         <div class="audio-list">
             <div v-for="(audio, index) in availableAudios" :key="audio.id" class="audio-card">
@@ -22,7 +22,6 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 import apiClient from "@/utils/axios"
 import { useCaseStore } from '../stores/caseStore.js'
 import { useRouter } from 'vue-router'
-import FolderPicker from './FolderPicker.vue'
 
 const availableAudios = ref([])
 const sortBy = ref('oldest')
