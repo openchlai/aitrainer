@@ -19,8 +19,8 @@
                 Evaluated ({{ statistics.notEvaluatedChunks }})</button>
             <button @click="currentTab = 'one_evaluation'" :class="{ active: currentTab === 'one_evaluation' }">With First
                 Evaluation ({{ statistics.oneEvaluationChunks }})</button>
-            <button @click="currentTab = 'two_evaluations'" :class="{ active: currentTab === 'two_evaluations' }">With Second
-                Evaluations ({{ statistics.twoEvaluationsChunks }})</button>
+            <!-- <button @click="currentTab = 'two_evaluations'" :class="{ active: currentTab === 'two_evaluations' }">With Second
+                Evaluations ({{ statistics.twoEvaluationsChunks }})</button> -->
         </div>
         <div v-if="currentTab != 'not_evaluated'">
             <p> <span style="background-color: green; border-radius: 50%;"> ✓ </span>Indicates chunks you have evaluated</p>
@@ -147,7 +147,6 @@ async function fetchChunks() {
         // Shuffle manually using Fisher-Yates algorithm
         notEvaluatedChunks.value = shuffleArray(response.data.not_evaluated || [])
         oneEvaluationChunks.value = shuffleArray(response.data.one_evaluation || [])
-        twoEvaluationsChunks.value = shuffleArray(response.data.two_evaluations || [])
 
         // caseStore.setAudioList([...notEvaluatedChunks.value, ...oneEvaluationChunks.value, ...twoEvaluationsChunks.value])
         errorMessage.value = ''
@@ -162,7 +161,6 @@ async function fetchChunks() {
 const activeChunks = computed(() => {
     if (currentTab.value === 'not_evaluated') return notEvaluatedChunks.value
     if (currentTab.value === 'one_evaluation') return oneEvaluationChunks.value
-    if (currentTab.value === 'two_evaluations') return twoEvaluationsChunks.value
     return []
 })
 
