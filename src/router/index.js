@@ -10,8 +10,6 @@ import Results from '@/modelmanagement/ResultsPage.vue';
 import ExperimentTracking from '@/modelmanagement/ExperimentTracking.vue';
 import ModelDeployment from '@/modelmanagement/ModelDeployment.vue';
 
-
-
 const routes = [
   {
     path: "/",
@@ -21,13 +19,20 @@ const routes = [
   {
     path: "/login",
     name: "login",
-    component: () => import("../components/userAuth.vue"),
+    component: () => import("../components/Login.vue"), // Updated path to components folder
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/register",
+    name: "register",
+    component: () => import("../components/Register.vue"), // Updated path to components folder
+    meta: { requiresAuth: false },
   },
   {
     path: "/dashboard",
     name: "dashboard",
     component: () => import("../components/MainDashboard.vue"),
-    meta: { requiresAuth: false },
+    meta: { requiresAuth: true }, // Changed to require auth
   },
   {
     path: "/deployment",
@@ -71,7 +76,6 @@ const routes = [
     component: () => import('../components/ChunkEvalScreen.vue'),
     meta: { requiresAuth: true },
   },
-  
   {
     path: "/training-progress",
     name: "training-progress",
@@ -108,14 +112,14 @@ const routes = [
     component: () => import('../components/TranscribingScreen.vue'),
     meta: { requiresAuth: true },
   },
-  { path: '/dataset-management', component: DatasetManagement },
-  { path: '/model-configuration', component: ModelConfiguration },
-  { path: '/training-control', component: TrainingControl },
-  { path: '/training-progress', component: TrainingProgress },
-  { path: '/model-evaluation', component: ModelEvaluation },
-  { path: '/results', component: Results },
-  { path: '/experiment-tracking', component: ExperimentTracking },
-  { path: '/model-deployment', component: ModelDeployment },
+  { path: '/dataset-management', component: DatasetManagement, meta: { requiresAuth: true } },
+  { path: '/model-configuration', component: ModelConfiguration, meta: { requiresAuth: true } },
+  { path: '/training-control', component: TrainingControl, meta: { requiresAuth: true } },
+  { path: '/training-progress', component: TrainingProgress, meta: { requiresAuth: true } },
+  { path: '/model-evaluation', component: ModelEvaluation, meta: { requiresAuth: true } },
+  { path: '/results', component: Results, meta: { requiresAuth: true } },
+  { path: '/experiment-tracking', component: ExperimentTracking, meta: { requiresAuth: true } },
+  { path: '/model-deployment', component: ModelDeployment, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
@@ -145,12 +149,11 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next("/login");
-  } else if (to.path === "/login" && isAuthenticated) {
+  } else if ((to.path === "/login" || to.path === "/register") && isAuthenticated) {
     next("/dashboard");
   } else {
     next();
   }
 });
-
 
 export default router;

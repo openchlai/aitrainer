@@ -1,6 +1,6 @@
 <script setup>
 import Navbar from './components/NavBar.vue';
-import Sidebar from './components/Sidebar.vue';
+// import Sidebar from './components/Sidebar.vue';
 import { RouterView } from 'vue-router';
 </script>
 
@@ -8,7 +8,7 @@ import { RouterView } from 'vue-router';
   <div class="app-container">
     <Navbar />
     <div class="main-container">
-      <Sidebar />
+      <!-- <Sidebar /> -->
       <div class="content">
         <RouterView />
       </div>
@@ -20,17 +20,16 @@ import { RouterView } from 'vue-router';
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+
 }
 
 .main-container {
-  display: flex;
+  /* display: flex; */
   flex: 1;
 }
 
 .content {
-  flex: 1;
-  padding: 20px;
+
 }
 
 .logo {
@@ -46,5 +45,12 @@ import { RouterView } from 'vue-router';
 
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
+}
+
+@media screen and (max-width: 768px) {
+  .content {
+
+  }
+  
 }
 </style>
