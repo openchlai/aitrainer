@@ -66,13 +66,12 @@ const isPlaying = ref(false);
 const currentTime = ref(0);
 
 const evaluationOptions = {
-    dual_speaker: { label: "Dual Speaker" },
+    not_clear: { label: "Not Clear" },
     speaker_overlap: { label: "Speaker Overlap" },
-    background_noise: { label: "Background Noise" },
-    prolonged_silence: { label: "Prolonged Silence" },
-    not_normal_speech_rate: { label: "Not Normal Speech Rate" },
-    echo_noise: { label: "Echo Noise" },
-    incomplete_sentence: { label: "Incomplete Sentence" },
+    dual_speaker: { label: "Dual Speaker" },
+    interruptive_background_noise: { label: "Interruptive Background Noise" },
+    silence: { label: "Silence" },
+    incomplete_word: { label: "Incomplete Word" },
 };
 
 const evaluation_payload = reactive({});
@@ -84,7 +83,7 @@ for (const key in evaluationOptions) {
 const audioList = computed(() => caseStore.audioList);
 const currentChunk = computed(() => audioList.value[currentIndex.value] || {});
 const totalChunks = computed(() => audioList.value.length);
-const audioSrc = computed(() => currentChunk.value.chunk_file || '');
+const audioSrc = computed(() => currentChunk.value.file_url || '');
 
 let evaluationStartTime = null;
 

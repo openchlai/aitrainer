@@ -125,9 +125,9 @@ console.log('audioList:', audioList.value.length)
 
 // Build the audio src
 const audioSrc = computed(() => {
-  if (!currentAudio.value.audio_file) return ''
-  console.log(currentAudio.value.audio_file)
-  return currentAudio.value.audio_file
+  if (!currentAudio.value.processed_file) return ''
+  console.log(currentAudio.value.processed_file)
+  return currentAudio.value.processed_file
 })
 
 // Whenever we switch chunks, reset playback & text
@@ -215,7 +215,7 @@ async function approveAudio() {
     return
   try {
     const resp = await apiClient.patch(
-      `/transcriptions/cleaned-audio-files/${currentAudio.value.unique_id}/approve/`,
+      `/transcriptions/processed-audio-files/${currentAudio.value.unique_id}/approve/`,
     )
     console.log(resp.data.message)
 
@@ -223,7 +223,7 @@ async function approveAudio() {
     // currentAudio.value.true_transcription = transcriptionText.value
     currentAudio.value.is_evaluated = true
 
-    toast.success('Audio successfully approved and chunked!')
+    toast.success('Audio successfully approved and Diarization has started!')
   } catch (err) {
     console.error('Error saving transcription:', err)
     toast.error('Could not save transcription.')
@@ -235,7 +235,7 @@ async function disapproveAudio() {
   if (!currentAudio.value.unique_id) return
   try {
     const resp = await apiClient.patch(
-      `/transcriptions/cleaned-audio-files/${currentAudio.value.unique_id}/disapprove/`,
+      `/transcriptions/processed-audio-files/${currentAudio.value.unique_id}/disapprove/`,
     )
     console.log(resp.data.message)
 

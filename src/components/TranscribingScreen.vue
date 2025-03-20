@@ -142,7 +142,7 @@ export default {
     const transcriptionText = ref(currentAudio.value.feature_text || '');
     const totalAudios = computed(() => audioList.value.length);
 
-    const audioSrc = computed(() => currentAudio.value.chunk_file || '');
+    const audioSrc = computed(() => currentAudio.value.file_url || '');
     // Reactive state
     const selectedCountry = ref("");
 

@@ -52,13 +52,12 @@ import apiClient from '../utils/axios.js'
 
 const evaluationData = ref([
     ["Category", "Count", { role: "annotation" }],
-    ["Dual Speaker", 0, "0"],
+    ["Not Clear", 0, "0"],
     ["Speaker Overlap", 0, "0"],
-    ["Background Noise", 0, "0"],
-    ["Prolonged Silence", 0, "0"],
-    ["Not Normal Speech Rate", 0, "0"],
-    ["Echo Noise", 0, "0"],
-    ["Incomplete Sentence", 0, "0"]
+    ["Dual Speaker", 0, "0"],
+    ["Interruptive Background Noise", 0, "0"],
+    ["Silence", 0, "0"],
+    ["Incomplete Word", 0, "0"]
 ]);
 
 const audioFilesData = ref([
@@ -78,6 +77,7 @@ const diversityData = ref([
     ["English", 60],
     ["Other Languages", 40]
 ]);
+
 const audioLengthData = ref([
     ["Length (Seconds)", "Number of Files"],
     ["0-5s", 1200],
@@ -102,7 +102,6 @@ const formatConsistencyData = ref([
     ["Other", 300]
 ]);
 
-
 // Chart Styles
 const barChartOptions = {
     legend: { position: "none" },
@@ -123,16 +122,16 @@ const fetchEvaluationData = async () => {
     try {
         const response = await apiClient.get("/transcriptions/evaluation-statistics/");
         const data = response.data;
-        const totalEvaluations = data.total_evaluations || 1; // Avoid division by zero
-
+        const totalEvaluations = data.total_evaluated_chunks || 1; // Avoid division by zero
+        
         evaluationData.value = [
             ["Category", "Count", { role: "annotation" }],
-            ["Dual Speaker", data.dual_speaker_count, `${data.dual_speaker_count} / ${totalEvaluations}`],
+            ["Not Clear", data.not_clear_count, `${data.not_clear_count} / ${totalEvaluations}`],
             ["Speaker Overlap", data.speaker_overlap_count, `${data.speaker_overlap_count} / ${totalEvaluations}`],
-            ["Background Noise", data.background_noise_count, `${data.background_noise_count} / ${totalEvaluations}`],
-            ["Prolonged Silence", data.prolonged_silence_count, `${data.prolonged_silence_count} / ${totalEvaluations}`],
-            ["Not Normal Speech Rate", data.not_normal_speech_rate_count, `${data.not_normal_speech_rate_count} / ${totalEvaluations}`],
-            ["Echo Noise", data.echo_noise_count, `${data.echo_noise_count} / ${totalEvaluations}`],
+            ["Dual Speaker", data.dual_speaker_count, `${data.dual_speaker_count} / ${totalEvaluations}`],
+            ["Interruptive Background Noise", data.interruptive_background_noise_count, `${data.interruptive_background_noise_count} / ${totalEvaluations}`],
+            ["Silence", data.silence_count, `${data.silence_count} / ${totalEvaluations}`],
+            ["Incomplete Word", data.incomplete_word_count, `${data.incomplete_word_count} / ${totalEvaluations}`]
         ];
     } catch (error) {
         console.error("Error fetching evaluation data:", error);
@@ -142,7 +141,6 @@ const fetchEvaluationData = async () => {
 onMounted(() => {
     fetchEvaluationData();
 });
-
 </script>
 
 <style>
