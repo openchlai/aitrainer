@@ -13,7 +13,7 @@
         <!-- Audio Cards -->
         <div class="audio-list">
             <div v-for="(audio, index) in availableAudios" :key="audio.id" class="audio-card">
-                <div v-if="audio.feature_text!==null" class="checkmark">✓</div>
+                <div v-if="audio.feature_text !== null && audio.feature_text !== ''" class="checkmark">✓</div>
                 <p>{{ "audio_" + index }}</p>
                 <button class="review-btn" @click="openAudioPlayerScreen(index)">
                     Transcribe

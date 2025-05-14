@@ -35,13 +35,13 @@
 
 
     <!-- Dropdown menus for gender and language -->
-    <div class="Gender-Language-Dropdowns">
+    <div>
       <!-- Gender Dropdown -->
-      <div class="gender-dropdown">
-        <label v-if="genderLabel" :for="genderId">{{ genderLabel }}</label>
-        <select :id="genderId" v-model="selectedGender" class="gender-select" @change="handleGender">
+      <div>
+        <!-- <label v-if="genderLabel" :for="genderId">{{ genderLabel }}</label> -->
+        <select id="genderId" v-model="selectedGender">
           <option value="" disabled>Select Gender</option>
-          <option v-if="genderPlaceholder" value="" disabled>{{ genderPlaceholder }}</option>
+          <!-- <option v-if="genderPlaceholder" value="" disabled>{{ genderPlaceholder }}</option> -->
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
@@ -50,10 +50,10 @@
       <!-- Country-Language Dropdown -->
       <div>
         <!-- Country Dropdown -->
-        <div class="country-dropdown">
+        <div>
           <select id="country" v-model="selectedCountry">
             <option value="" disabled>Select a country</option>
-            <option v-for="(value, country) in languages" :key="country" :value="country">
+            <option v-for="(, country) in languages" :key="country" :value="country">
               {{ country }}
             </option>
           </select>
